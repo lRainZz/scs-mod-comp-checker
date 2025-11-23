@@ -1,0 +1,19 @@
+{
+    "name": "scs-mod-comp-checker",
+    "version": "1.0.0",
+    "main": "index.js",
+    "type": "commonjs",
+    "author": "lRainZz",
+    "license": "GPL-3.0-only",
+    "description": "Checks if zip archives in a given folder contain the same files - intended for checking if installed ETS2/ATS mods have conflicts",
+    "scripts": {
+        "check": "node index.js",
+        "build": "pkg --config pkg-config.json index.js -o smcc"
+    },
+    "dependencies": {
+        "7z-wasm": "^1.2.0"
+    },
+    "devDependencies": {
+        "pkg": "^5.8.1"
+    }
+}
