@@ -8,6 +8,11 @@ interface Arguments {
     manualSteamDir:          string | null
 }
 
+interface ModArchive {
+    modName: string
+    path:    string
+}
+
 interface Mod {
     modName: string
     files:   string[]

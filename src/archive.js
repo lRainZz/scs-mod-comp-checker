@@ -5,18 +5,27 @@ const path = require('path')
 /**
  * @param {string} directory path
  * 
- * @returns {string[]} list of valid archives
+ * @returns {ModArchive[]} list of valid archives
  */
 const getArchivePathsOfDirectory = (directory) => {
-    return fs.readdirSync(directory)
+    const paths = fs.readdirSync(directory)
     // ets only supports archives in scs or zip format
     // no need to check for other formats or directories
     .filter(archivePath => archivePath.endsWith('.scs') || archivePath.endsWith('.zip'))
     .map(archivePath => path.resolve(directory, archivePath))
+
+    return paths.map(archivePath => {
+        /** @type {ModArchive} */
+        const result = {
+            modName: path.basename(archivePath),
+            path: archivePath
+        }
+        return result
+    })
 }
 
 /**
- * @param {string} pathToArchive#
+ * @param {string} pathToArchive
  * 
  * @returns {Promise<ModContent>} list of files in archive
  */
@@ -100,7 +109,7 @@ const _listFilesOfArchive = async (pathToArchive, withAutomatFiles = false) => {
 }
 
 /**
- * @param {string[]} archivesToCheck list of archive paths
+ * @param {ModArchive[]} archivesToCheck list of archive paths
  * 
  * @returns {Promise<MoData>}
  */
@@ -108,9 +117,9 @@ const gatherModDataFromArchives = async (archivesToCheck, withAutomatFiles = fal
     const mods      = []
     const modErrors = []
 
-    for (archivePath of archivesToCheck) {
-        const modName = path.basename(archivePath)
-        const { pathList, errors } = await _listFilesOfArchive(archivePath, withAutomatFiles)
+    for (const archive of archivesToCheck) {
+        const modName = archive.modName
+        const { pathList, errors } = await _listFilesOfArchive(archive.path, withAutomatFiles)
 
         if (errors.length > 0) {
             /** @type {ModError} */

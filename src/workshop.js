@@ -2,6 +2,12 @@ const { execSync } = require('child_process')
 const path = require('path')
 const fs = require('fs')
 
+/**
+ * @param {boolean} analyseEts
+ * @param {string} manualPath
+ * 
+ * @returns {string} Path to the workshop folder
+ */
 const determineWorkshopFolder = (analyseEts, manualPath = '') => {
     let directoryPath = manualPath
 
@@ -40,17 +46,36 @@ const determineWorkshopFolder = (analyseEts, manualPath = '') => {
     return directoryPath
 }
 
-const getListOfWorkshopArchives = () => {
-    // TODO: for each folder in workshop content -> _listFilesOfWorkShopMod
-    return []
+/**
+ * @param {string} workshopDirectory
+ * 
+ * @returns {ModArchive[]}
+ */
+const getListOfWorkshopArchives = (workshopDirectory) => {
+    const modDirectories = fs.readdirSync(workshopDirectory)
+    .filter(path => fs.lstatSync(path).isDirectory())
+
+    return [] // modDirectories.map(dir => _extractModData(dir))
 }
 
-const _determineModArchive = () => {
+/**
+ * @param {string} workshopModDirectory
+ * 
+ * @returns {ModArchive} for the given mod dir
+ */
+const _extractModData = (workshopModDirectory) => {
     // TODO: 
     // - analyse versions.sii to get the correct archive (newest)
-    // - analyse manifest.ssi for the mod name
+    // - analyse manifest.ssi for the mod name (workshop: [name] - [modId])
     //      -> refactor getArchivePathsOfDirectory to add a mod name to the path
     //         since the workshop archives have arbitrary names
+    /** @type {ModArchive} */
+    const result = {
+        modName: 'TODO',
+        path: 'TODO'
+    }
+
+    return result
 }
 
 module.exports = {
