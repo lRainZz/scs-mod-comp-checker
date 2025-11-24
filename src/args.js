@@ -19,6 +19,8 @@ const getArgs = () => {
     const withAutomatFiles        = args.includes('-i') || args.includes('--include-automat')
     const showAllConflictingFiles = args.includes('-a') || args.includes('--all-conflicting-files')
     const modNamesOnly            = args.includes('-m') || args.includes('--mod-names-only')
+    const excludeWorkshop         = args.includes('-e') || args.includes('--exclude-workshop-mods')
+    // TODO: -s, --steam-dir for manual workshop resolution
 
     if (needsHelp) {
         _printHelp()
@@ -47,7 +49,13 @@ const getArgs = () => {
         process.exit(1)
     }
 
-    return { modDir, withAutomatFiles, showAllConflictingFiles, modNamesOnly }
+    return {
+        modDir,
+        withAutomatFiles,
+        showAllConflictingFiles,
+        modNamesOnly,
+        excludeWorkshop
+    }
 }
 
 const _printHelp = () => {

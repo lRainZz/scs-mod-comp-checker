@@ -18,7 +18,7 @@ const getArchivePathsOfDirectory = (directory) => {
 /**
  * @param {string} pathToArchive#
  * 
- * @returns {Promise<ArchiveContent>} list of files in archive
+ * @returns {Promise<ModContent>} list of files in archive
  */
 const _listFilesOfArchive = async (pathToArchive, withAutomatFiles = false) => {
     let output = ''
@@ -90,90 +90,57 @@ const _listFilesOfArchive = async (pathToArchive, withAutomatFiles = false) => {
         }
     })
 
-    return {
+    /** @type {ModContent} */
+    const result = {
         pathList,
         errors
     }
+
+    return result
 }
 
 /**
  * @param {string[]} archivesToCheck list of archive paths
  * 
- * @returns {Promise<ArchivesData>}
+ * @returns {Promise<MoData>}
  */
-const gatherArchiveData = async (archivesToCheck, withAutomatFiles = false) => {
-    const archives      = []
-    const archiveErrors = []
+const gatherModDataFromArchives = async (archivesToCheck, withAutomatFiles = false) => {
+    const mods      = []
+    const modErrors = []
 
     for (archivePath of archivesToCheck) {
-        const archiveName = path.basename(archivePath)
+        const modName = path.basename(archivePath)
         const { pathList, errors } = await _listFilesOfArchive(archivePath, withAutomatFiles)
 
         if (errors.length > 0) {
-            archiveErrors.push({
-                archiveName,
+            /** @type {ModError} */
+            const modError = {
+                modName,
                 errors
-            })
+            }
+
+            modErrors.push(modError)
         }
 
-        archives.push({
-            archiveName,
+        /** @type {Mod} */
+        const mod = {
+            modName,
             files: pathList
-        })
+        }
+
+        mods.push(mod)
     }
 
-    return {
-        archives,
-        archiveErrors
+    /** @type {ModData} */
+    const result = {
+        mods,
+        modErrors
     }
-}
 
-/**
- * @param {ArchivesData} archiveData
- * 
- * @returns {Promise<AnalysisResult>}
- */
-const analyseArchives = async (archiveData) => {
-    const duplicates = []
-    const errors = []
-
-    archiveData.archives.forEach(archive => {
-        archive.files.forEach(filePath => {
-            // checked if the current file is in other archives
-            const fileInOtherArchives = archiveData.archives.find(innerArchive => innerArchive.files.includes(filePath) && innerArchive.archiveName !== archive.archiveName)
-
-            // if not, go to the next one
-            if (!fileInOtherArchives) {
-                return
-            }
-
-            // if its in other archives, check if its already in the duplicates
-            const fileInDuplicates = duplicates.find(dup => dup.filePath === filePath)
-
-            // if not, create the first duplicate entry
-            if (!fileInDuplicates) {
-                const newEntry = {
-                    filePath,
-                    mods: []
-                }
-
-                newEntry.mods.push(archive.archiveName)
-                duplicates.push(newEntry)
-                return
-            }
-
-            // else add the archive name to the conflicted mods
-            fileInDuplicates.mods.push(archive.archiveName)
-        })
-    })
-
-    archiveData.archiveErrors.forEach(archive => errors.push(archive.archiveName))
-
-    return { duplicates, errors }
+    return result
 }
 
 module.exports = {
     getArchivePathsOfDirectory,
-    gatherArchiveData,
-    analyseArchives
+    gatherModDataFromArchives
 }

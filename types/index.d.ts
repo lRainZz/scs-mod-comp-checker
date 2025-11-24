@@ -3,26 +3,27 @@ interface Arguments {
     withAutomatFiles:        boolean
     showAllConflictingFiles: boolean
     modNamesOnly:            boolean
+    excludeWorkshop:         boolean
 }
 
-interface Archive {
-    archiveName: string
-    files:       string[]
+interface Mod {
+    modName: string
+    files:   string[]
 }
 
-interface ArchiveError {
-    archiveName: string
-    errors:      string[]
+interface ModError {
+    modName: string
+    errors:  string[]
 }
 
-interface ArchiveContent {
+interface ModContent {
     pathList: string[]
     errors:   string[]
 }
 
-interface ArchivesData {
-    archives:      Archive[]
-    archiveErrors: ArchiveError[]
+interface ModData {
+    mods:      Mod[]
+    modErrors: ModError[]
 }
 
 interface AnalysisResult {
