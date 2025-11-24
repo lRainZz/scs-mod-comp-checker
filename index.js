@@ -11,18 +11,29 @@ const main = async () => {
             withAutomatFiles,
             showAllConflictingFiles,
             modNamesOnly,
-            excludeWorkshop
+            excludeWorkshop,
+            analyseEts,
+            manualSteamDir
         } = getArgs()
+
+        let allModData = []
 
         const modArchives = getArchivePathsOfDirectory(modDir)
         const modDataFromArchives = await gatherModDataFromArchives(modArchives)
 
+        allModData.push(...modDataFromArchives)
+
         if (!excludeWorkshop) {
-            const steamDir = determineWorkshopFolder()
-            console.log('steamDir', steamDir)
+            const workshopDirectory = determineWorkshopFolder(analyseEts, manualSteamDir)
+            // TODO: gather mod data from workshop dir
+            // - versions.sii
+            // - archives
+            // - simple folders
+            // add to "allModData"
+            console.log('workshopDirectory', workshopDirectory)
         }
 
-        const results = await analyseModsContent(modDataFromArchives)
+        const results = await analyseModsContent(allModData)
 
         writeResults(results, showAllConflictingFiles, modNamesOnly, withAutomatFiles)
     } catch (error) {

@@ -14,13 +14,16 @@ const getArgs = () => {
     // so we clear the modDir
     let modDir = args[2]?.replace(/^-{1,2}.*/g, '')
 
+    // args with shorthands
     const needsHelp               = args.includes('-h') || args.includes('--help')
     const printVersion            = args.includes('-v') || args.includes('--version')
     const withAutomatFiles        = args.includes('-i') || args.includes('--include-automat')
     const showAllConflictingFiles = args.includes('-a') || args.includes('--all-conflicting-files')
     const modNamesOnly            = args.includes('-m') || args.includes('--mod-names-only')
     const excludeWorkshop         = args.includes('-e') || args.includes('--exclude-workshop-mods')
-    // TODO: -s, --steam-dir for manual workshop resolution
+    // special args
+    const analyseEts              = !args.includes('--ats')
+    const useManualSteamDirArg    = args.find(arg => arg.includes('--steam-dir'))
 
     if (needsHelp) {
         _printHelp()
@@ -49,12 +52,23 @@ const getArgs = () => {
         process.exit(1)
     }
 
+    let manualSteamDir = null
+
+    if (!!useManualSteamDirArg) {
+        /** @type {string} */
+        const dirRegex = /--steam-dir=(?:"([^"]+)"|(\S+))/g
+        manualSteamDir = useManualSteamDirArg.match(dirRegex).at(0)?.split('=')?.at(1)
+        console.log('Using manual Steam directory "'+ manualSteamDir +'"')
+    }
+
     return {
         modDir,
         withAutomatFiles,
         showAllConflictingFiles,
         modNamesOnly,
-        excludeWorkshop
+        excludeWorkshop,
+        analyseEts,
+        manualSteamDir
     }
 }
 
@@ -65,6 +79,9 @@ By default, SMCC will ignore any 'automat/' files and print out
 up to 3 conflicting files per mod, as well as tell you how many
 more files are conflicted. To fine tune your result, you can use
 the following cmd line flags.
+
+If the flag '--ats' is absent, the ETS2 workshop content will
+be tried to be analyzed.
 
 All flags must come after the the path to the mod folder if provided!
 'smcc.exe [path-to-mod-directory] [flags]'
@@ -83,6 +100,12 @@ All flags must come after the the path to the mod folder if provided!
 
     -m, --mod-names-only
         EXCLUDES ALL files that are conflicted from the result
+
+    -e, --exclude-workshop-mods
+        Excludes the workshop files from the analysis
+
+    --ats
+        Analyse the workshop contens of ATS instead of ETS2
 `)
 }
 

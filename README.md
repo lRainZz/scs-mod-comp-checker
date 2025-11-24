@@ -1,5 +1,5 @@
 # SCS Mod Compatibility Checker - SMCC
-This programm is intended for checking if any of the installed mods in an ETS2/ATS mod directory are conflicting themselves in any way. It basically compares the file lists of any .zip and .scs archives inside a given folder. Besides the "mod" wording, this could also be used to check any list of archives for duplicate files.
+This programm is intended for checking if any of the installed mods in an ETS2/ATS mod directory are conflicting themselves in any way. It compares the contents of a given mod folder as well as the workshop contents of either ETS2 or ATS, depending on the settings.
 
 ## How To
 ### Download
@@ -35,6 +35,9 @@ up to 3 conflicting files per mod, as well as tell you how many
 more files are conflicted. To fine tune your result, you can use
 the following cmd line flags.
 
+If the flag '--ats' is absent, the ETS2 workshop content will
+be tried to be analyzed.
+
 All flags must come after the the path to the mod folder if provided!
 'smcc.exe [path-to-mod-directory] [flags]'
 
@@ -52,6 +55,12 @@ All flags must come after the the path to the mod folder if provided!
 
     -m, --mod-names-only
         EXCLUDES ALL files that are conflicted from the result
+
+    -e, --exclude-workshop-mods
+        Excludes the workshop files from the analysis
+
+    --ats
+        Analyse the workshop contens of ATS instead of ETS2
 ```
 
 ## License
@@ -60,3 +69,4 @@ This project is licensed under the GPL-3.0 license
 # TODO
 - locked mods with scs extractor?
 - Tests!
+- UI?

@@ -4,6 +4,8 @@ interface Arguments {
     showAllConflictingFiles: boolean
     modNamesOnly:            boolean
     excludeWorkshop:         boolean
+    analyseEts:              boolean
+    manualSteamDir:          string | null
 }
 
 interface Mod {
