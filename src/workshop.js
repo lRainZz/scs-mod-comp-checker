@@ -38,7 +38,7 @@ const determineWorkshopFolder = (analyseEts, manualPath = '') => {
         !directoryPath.includes('/steamapps') ? 'steamapps' : '',
         !directoryPath.includes('/workshop') ? 'workshop' : '',
         !directoryPath.includes('/content') ? 'content' : '',
-        !directoryPath.includes(appId) ? appId : ''
+        appId
     )
 
     if (!fs.existsSync(directoryPath)) {

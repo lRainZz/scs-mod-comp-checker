@@ -1,7 +1,6 @@
 const fs = require('fs')
 
 /**
- * 
  * @returns {Arguments}
  */
 const getArgs = () => {
@@ -106,6 +105,33 @@ All flags must come after the the path to the mod folder if provided!
 
     --ats
         Analyse the workshop contens of ATS instead of ETS2
+
+    --steam-dir=[path/to/your/steam/dir]
+        If SMCC can't detect your steam folder, or your ETS2/ATS is installed
+        in a separate library from your main Steam installation, you need to
+        supply the path to your steam library manually. This will look at the
+        supplied path an add "steamapps", "workshop", "content", "[ETS2/ATS-AppId]"
+        by iteself if missing.
+
+        Example:
+            Default Steam path:
+                "C:\\Program Files\\Steam"
+            Default Steam workshop path:
+                "C:\\Program Files\\Steam\\steamapps\\workshop\\content"
+
+            Custom Steam library path:
+                "D:\\MySteamLibrary"
+            Custom Steam workshop path:
+                "D:\\MySteamLibrary\\steamapps\\workshop\\content"
+
+            Call SMCC like this:
+                smcc.exe --steam-dir="D:\\MySteamLibrary"
+            OR
+                smcc.exe --steam-dir="D:\\MySteamLibrary\\steamapps"
+            OR
+                smcc.exe --steam-dir="D:\\MySteamLibrary\\steamapps\\workshop"
+            OR
+                smcc.exe --steam-dir="D:\\MySteamLibrary\\steamapps\\workshop\\content"
 `)
 }
 
