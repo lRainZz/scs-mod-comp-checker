@@ -56,3 +56,7 @@ All flags must come after the the path to the mod folder if provided!
 
 ## License
 This project is licensed under the GPL-3.0 license
+
+# TODO
+- locked mods with scs extractor?
+- Tests!
