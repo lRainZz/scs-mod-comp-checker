@@ -3,28 +3,19 @@ const path = require('path')
 const fs = require('fs')
 
 const determineWorkshopFolder = (analyseEts, manualPath = '') => {
-    const ERRORS = {
-        STEAM_NOT_FOUND: 'steam-not-found',
-        WORKSHOP_NOT_IN_MAIN: 'ets-workshop-not-in-main-steam-installation'
-    }
-
     let directoryPath = manualPath
 
     if (!manualPath) {
-        try {
-            // try to read the steam install folder from the windows registry
-            const output = execSync(
-                'reg query "HKCU\\Software\\Valve\\Steam" /v SteamPath',
-                { encoding: 'utf-8' }
-            )
+        // try to read the steam install folder from the windows registry
+        const output = execSync(
+            'reg query "HKCU\\Software\\Valve\\Steam" /v SteamPath',
+            { encoding: 'utf-8' }
+        )
 
-            const match = output.match(/SteamPath\s+REG_SZ\s+(.+)/);
-            directoryPath = match ? match[1].trim().replace(/\\\\/g, "\\") : null
+        const match = output.match(/SteamPath\s+REG_SZ\s+(.+)/);
+        directoryPath = match ? match[1].trim().replace(/\\\\/g, "\\") : null
 
-            if (!directoryPath) {
-                throw ERRORS.STEAM_NOT_FOUND
-            }
-        } catch (error) {
+        if (!directoryPath) {
             console.log('Could not determine Steam workshop directory, please use "--steam-dir="path/to/your/steam/dir/with/ets/or/ats" to supply it manually')
             console.log('Or exlude the Steam workshop analysis by using "-e, --exclude-workshop-mods"')
             process.exit(1)
@@ -49,7 +40,21 @@ const determineWorkshopFolder = (analyseEts, manualPath = '') => {
     return directoryPath
 }
 
+const getListOfWorkshopArchives = () => {
+    // TODO: for each folder in workshop content -> _listFilesOfWorkShopMod
+    return []
+}
+
+const _determineModArchive = () => {
+    // TODO: 
+    // - analyse versions.sii to get the correct archive (newest)
+    // - analyse manifest.ssi for the mod name
+    //      -> refactor getArchivePathsOfDirectory to add a mod name to the path
+    //         since the workshop archives have arbitrary names
+}
+
 module.exports = {
-    determineWorkshopFolder
+    determineWorkshopFolder,
+    getListOfWorkshopArchives
 }
 
