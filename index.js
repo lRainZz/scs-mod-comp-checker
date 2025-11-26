@@ -2,7 +2,22 @@ const { analyseModsContent } = require('./src/analysis.js')
 const { gatherModDataFromArchives, getArchivePathsOfDirectory } = require('./src/archive.js')
 const { getArgs } = require('./src/args.js')
 const { writeResults } = require('./src/result-files.js')
+const { installSevenZip, uninstallSevenZip } = require('./src/seven-zip/index.js')
 const { determineWorkshopFolder, getListOfWorkshopArchives } = require('./src/workshop.js')
+
+const setup = () => installSevenZip()
+const cleanup = () => uninstallSevenZip()
+
+// register cleanup for any kind of shutdown
+process.on('exit', cleanup)
+process.on('SIGINT', () => { 
+    cleanup()
+    process.exit()
+})
+process.on('SIGTERM', () => {
+    cleanup()
+    process.exit()
+})
 
 const main = async () => {
     try {
@@ -35,4 +50,5 @@ const main = async () => {
     }
 }
 
+setup()
 main()

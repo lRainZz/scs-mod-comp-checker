@@ -1,11 +1,5 @@
 {
     "targets": [
         "node16-win-x64"
-    ],
-    "assets": [
-        "node_modules/7z-wasm/7zz.wasm",
-        "node_modules/7z-wasm/7zz.es6.js",
-        "node_modules/7z-wasm/7zz.umd.js",
-        "node_modules/7z-wasm/bin/**/*"
     ]
 }

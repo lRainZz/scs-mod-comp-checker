@@ -20,7 +20,7 @@ interface Mod {
 
 interface ModError {
     modName: string
-    errors:  string[]
+    error:   string
 }
 
 interface ModContent {

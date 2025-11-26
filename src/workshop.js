@@ -1,6 +1,7 @@
 const { execSync } = require('child_process')
 const path = require('path')
 const fs = require('fs')
+const { extractFileFromArchive } = require('./archive.js')
 
 /**
  * @param {boolean} analyseEts
@@ -22,7 +23,7 @@ const determineWorkshopFolder = (analyseEts, manualPath = '') => {
         directoryPath = match ? match[1].trim().replace(/\\\\/g, "\\") : null
 
         if (!directoryPath) {
-            console.log('Could not determine Steam workshop directory, please use "--steam-dir="path/to/your/steam/dir/with/ets/or/ats" to supply it manually')
+            console.log('\nCould not determine Steam workshop directory, please use "--steam-dir="path/to/your/steam/dir/with/ets/or/ats" to supply it manually')
             console.log('Or exlude the Steam workshop analysis by using "-e, --exclude-workshop-mods"')
             process.exit(1)
         }
@@ -32,14 +33,14 @@ const determineWorkshopFolder = (analyseEts, manualPath = '') => {
 
     directoryPath = path.join(
         directoryPath,
-        !directoryPath.includes('/steamapps') ? 'steamapps' : '',
-        !directoryPath.includes('/workshop') ? 'workshop' : '',
-        !directoryPath.includes('/content') ? 'content' : '',
+        !directoryPath.includes('steamapps') ? 'steamapps' : '',
+        !directoryPath.includes('workshop') ? 'workshop' : '',
+        !directoryPath.includes('content') ? 'content' : '',
         appId
     )
 
     if (!fs.existsSync(directoryPath)) {
-        console.log('Could not read workshop directory "'+ directoryPath + '"')
+        console.log('\nCould not read workshop directory "'+ directoryPath + '"')
         process.exit(1)
     }
 
@@ -53,9 +54,12 @@ const determineWorkshopFolder = (analyseEts, manualPath = '') => {
  */
 const getListOfWorkshopArchives = (workshopDirectory) => {
     const modDirectories = fs.readdirSync(workshopDirectory)
-    .filter(path => fs.lstatSync(path).isDirectory())
+    .map(modPath => path.join(workshopDirectory, modPath))
+    .filter(modPath => fs.lstatSync(modPath).isDirectory())
 
-    return [] // modDirectories.map(dir => _extractModData(dir))
+    modDirectories.map(dir => _extractModData(dir))
+
+    return [] 
 }
 
 /**
@@ -64,6 +68,24 @@ const getListOfWorkshopArchives = (workshopDirectory) => {
  * @returns {ModArchive} for the given mod dir
  */
 const _extractModData = (workshopModDirectory) => {
+    const directoryFiles = fs.readdirSync(workshopModDirectory)
+
+    const onlyOneArchive = directoryFiles
+    .filter(filePath => filePath.includes('.zip') || filePath.includes('.scs'))
+    .length === 1
+
+    // if there is only one archive present in the directory
+    // wen can safely assume, that this is the actual mod
+    if (onlyOneArchive) {
+        const archiveName = directoryFiles.find(filePath => filePath.includes('.zip'))
+        || directoryFiles.find(filePath => filePath.includes('.scs'))
+
+        return _getModNameFromManifest(path.join(workshopModDirectory, archiveName))
+    }
+
+    // else we need to analyse the versions.sii to get 
+    // the correct archive
+
     // TODO: 
     // - analyse versions.sii to get the correct archive (newest)
     // - analyse manifest.ssi for the mod name (workshop: [name] - [modId])
@@ -76,6 +98,16 @@ const _extractModData = (workshopModDirectory) => {
     }
 
     return result
+}
+
+/**
+ * 
+ * @param {string} modPath 
+ * 
+ * @returns {ModArchive}
+ */
+const _getModNameFromManifest = (modPath) => {
+    // extractFileFromArchive(modPath, 'manifest.sii')
 }
 
 module.exports = {

@@ -6,12 +6,12 @@ const path = require('path')
  */
 const writeResults = (result, showAllConflictingFiles = false, modNamesOnly = false) => {
     const errorString = result.errors.length > 0
-        ? 'Could not open/analyze the following mod archives:\n  - "' + result.errors.join('"\n  - "') + '"'
+        ? '\nCould not open/analyze the following mod archives:\n  - "' + result.errors.join('"\n  - "') + '"'
         : ''
 
     if (result.duplicates.length === 0) {
         if (errorString) console.log(errorString)
-        console.log('No duplicates found')
+        console.log('\nNo duplicates found')
         process.exit(0)
     }
     const transformedResult = _buildResultPrintStructure(result.duplicates)
@@ -94,7 +94,7 @@ const writeResults = (result, showAllConflictingFiles = false, modNamesOnly = fa
 
     const resultFilePath = path.resolve(process.cwd(), 'mod-analysis-result.txt')
     fs.writeFileSync(resultFilePath, outputContent)
-    console.log('Successfully written result to "' + resultFilePath + '"')
+    console.log('\nSuccessfully written result to "' + resultFilePath + '"')
 }
 
 /**

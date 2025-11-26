@@ -1,6 +1,12 @@
-const SevenZip = require('7z-wasm')
 const fs = require('fs')
 const path = require('path')
+const os = require('os')
+const { execFileSync } = require('child_process')
+const { execute7zip } = require('./seven-zip/index.js')
+
+const APP_DATA_PATH           = path.join(os.homedir(), 'Appdata', 'Local', 'smcc')
+const SEVEN_ZIP_INTERNAL_PATH = path.join(__dirname, '..', 'lib', '7za.exe')
+fs.mkdirSync(APP_DATA_PATH, { recursive: true })
 
 /**
  * @param {string} directory path
@@ -27,32 +33,21 @@ const getArchivePathsOfDirectory = (directory) => {
 /**
  * @param {string} pathToArchive
  * 
- * @returns {Promise<ModContent>} list of files in archive
+ * @returns {Promise<string[]>} list of files in archive
  */
-const _listFilesOfArchive = async (pathToArchive, withAutomatFiles = false) => {
+const _listFilesOfArchive = (pathToArchive, withAutomatFiles = false) => {
     let output = ''
-    const errors = []
 
-    const sevenZip = await SevenZip({
-        print: text => output += text + '\n',
-        printErr: err => errors.push(err),
-    })
-
-    // get the arhive data and name
-    const archiveData = fs.readFileSync(pathToArchive)
-    const archiveName = path.basename(pathToArchive)
-
-    // load the archive into the wasm file system
-    const archiveStream = sevenZip.FS.open(archiveName, "w+")
-    sevenZip.FS.write(archiveStream, archiveData, 0, archiveData.length)
-    sevenZip.FS.close(archiveStream)
-
-    // actual unpacking of the archive in the wasm fs
-    // l: list archive contents
-    // -ba: bare output, no headers, no sumamry
-    sevenZip.callMain(["l", "-ba", archiveName])
-
-    // const output = sevenZip.stdout.trim()
+    try {
+        output = execute7zip([
+            "l",
+            "-ba",
+            pathToArchive
+        ])
+    } catch (error) {
+        console.log('\n7zip error while listing files of archive:', error)
+        throw error
+    }
 
     // 7zip uses the following file attributes:
     // D.... - directory
@@ -87,25 +82,17 @@ const _listFilesOfArchive = async (pathToArchive, withAutomatFiles = false) => {
         }
 
         // only get files not directories
-        // filePath.includes('/') -> only get files beyond the first level
-        // since the root dir only contains meta data that is not mounted
-        // into the games directories
-        if (attributes
-            && !attributes.includes('D')
-            && filePath.includes('/')
-            && (withAutomatFiles || !filePath.startsWith('automat/'))
+        // filePath.includes('/') || filePath.includes('\\')) -> only get files beyond the first level
+        // since the root dir only contains meta data that is not mounted into the games directories
+        if (!attributes.includes('D')
+            && (filePath.includes('/') || filePath.includes('\\'))
+            && (withAutomatFiles || !filePath.startsWith('automat'))
         ) {
             pathList.push(filePath)
         }
     })
 
-    /** @type {ModContent} */
-    const result = {
-        pathList,
-        errors
-    }
-
-    return result
+    return pathList
 }
 
 /**
@@ -119,25 +106,26 @@ const gatherModDataFromArchives = async (archivesToCheck, withAutomatFiles = fal
 
     for (const archive of archivesToCheck) {
         const modName = archive.modName
-        const { pathList, errors } = await _listFilesOfArchive(archive.path, withAutomatFiles)
 
-        if (errors.length > 0) {
+        try {
+            const pathList = _listFilesOfArchive(archive.path, withAutomatFiles)
+
+            /** @type {Mod} */
+            const mod = {
+                modName,
+                files: pathList
+            }
+
+            mods.push(mod)
+        } catch (error) {
             /** @type {ModError} */
             const modError = {
                 modName,
-                errors
+                error
             }
 
             modErrors.push(modError)
         }
-
-        /** @type {Mod} */
-        const mod = {
-            modName,
-            files: pathList
-        }
-
-        mods.push(mod)
     }
 
     /** @type {ModData} */
@@ -149,7 +137,25 @@ const gatherModDataFromArchives = async (archivesToCheck, withAutomatFiles = fal
     return result
 }
 
+const extractFileFromArchive = (archivePath, pathToFileInArchive) => {
+    try {
+        const result = execute7zip([
+            'x',
+            archivePath,
+            pathToFileInArchive,
+            `-o${APP_DATA_PATH}`
+        ])
+
+        // TODO: read file content
+        console.log('extract result', result)
+    } catch (error) {
+        console.log('\n7zip error while extracting:', error)
+        throw error
+    }
+}
+
 module.exports = {
     getArchivePathsOfDirectory,
-    gatherModDataFromArchives
+    gatherModDataFromArchives,
+    extractFileFromArchive
 }

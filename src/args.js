@@ -31,33 +31,31 @@ const getArgs = () => {
 
     if (printVersion) {
         const { version } = require('../package.json')
-        console.log('SMCC Version ' + version)
+        console.log('\SMCC Version ' + version)
         process.exit(0)
     }
 
     if (!modDir?.trim()) {
         const currentDir = process.cwd()
-        console.log('Mod directory missing, trying current directory "'+ currentDir + '"')
+        console.log('\nMod directory missing, trying current directory "'+ currentDir + '"')
         modDir = currentDir
     }
 
     if (!fs.existsSync(modDir) || !fs.lstatSync(modDir).isDirectory()) {
-        console.log(`Invalid mod directory "${modDir}" either does not exist or is not a directory`)
+        console.log(`\nInvalid mod directory "${modDir}" either does not exist or is not a directory`)
         process.exit(1)
     }
 
     if (showAllConflictingFiles && modNamesOnly) {
-        console.log('Can not show all conflicting files and none at the same time, either use "-a" OR "-m"')
+        console.log('\nCan not show all conflicting files and none at the same time, either use "-a" OR "-m"')
         process.exit(1)
     }
 
     let manualSteamDir = null
 
     if (!!useManualSteamDirArg) {
-        /** @type {string} */
-        const dirRegex = /--steam-dir=(?:"([^"]+)"|(\S+))/g
-        manualSteamDir = useManualSteamDirArg.match(dirRegex).at(0)?.split('=')?.at(1)
-        console.log('Using manual Steam directory "'+ manualSteamDir +'"')
+        manualSteamDir = useManualSteamDirArg.split('=').at(1)
+        console.log('\nUsing manual Steam directory "'+ manualSteamDir +'"')
     }
 
     return {
@@ -74,7 +72,7 @@ const getArgs = () => {
 const _printHelp = () => {
     console.log(
 `
-By default, SMCC will ignore any 'automat/' files and print out
+\nBy default, SMCC will ignore any 'automat/' files and print out
 up to 3 conflicting files per mod, as well as tell you how many
 more files are conflicted. To fine tune your result, you can use
 the following cmd line flags.
