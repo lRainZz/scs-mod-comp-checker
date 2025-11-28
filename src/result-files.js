@@ -179,7 +179,7 @@ const _buildConflictsForMod = (modName, resultDuplicates) => {
 
 const _getFinePrint = () => {
     let result = '\n\nThis analysis was brought to you by lRainZz - https://steamcommunity.com/id/rainzzonsteam/'
-    result += '\nIf you found this helpful, please consider a donation via PayPal - http://paypal.me/rainzz'
+    result += '\nIf you found this helpful, consider buying me Coffee - https://ko-fi.com/lrainzz'
     result += '\n\nIf you have questions, issues or ideas, consider contributing via GitHub - https://github.com/lRainZz/scs-mod-comp-checker'
 
     return result
