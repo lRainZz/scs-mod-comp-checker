@@ -1,7 +1,11 @@
 const { execSync } = require('child_process')
 const path = require('path')
 const fs = require('fs')
-const { extractFileFromArchive } = require('./archive.js')
+const { execute7zip } = require('./seven-zip/index.js')
+const TEMP_DATA_DIR = require('./temp-dir.js')
+
+const ETS_APP_ID = '227300'
+const ATS_APP_ID = '270880'
 
 /**
  * @param {boolean} analyseEts
@@ -29,7 +33,7 @@ const determineWorkshopFolder = (analyseEts, manualPath = '') => {
         }
     }
 
-    const appId = analyseEts ? '227300' : '270880'
+    const appId = analyseEts ? ETS_APP_ID : ATS_APP_ID
 
     directoryPath = path.join(
         directoryPath,
@@ -57,7 +61,25 @@ const getListOfWorkshopArchives = (workshopDirectory) => {
     .map(modPath => path.join(workshopDirectory, modPath))
     .filter(modPath => fs.lstatSync(modPath).isDirectory())
 
-    modDirectories.map(dir => _extractModData(dir))
+
+    const workshopMods = modDirectories.map(dir => {
+        const errors = []
+
+        try {
+
+            // TODO:
+            // add errors to ModArchive type
+            // ALSO TODO:
+            // do the same for the MoData type and implement
+            // the change in local.js
+            return _extractModData(dir)
+        } catch (error) {
+            errors.push(error)
+            return null
+        }
+    })
+
+    console.log('workshop mods', workshopMods)
 
     return [] 
 }
@@ -80,7 +102,15 @@ const _extractModData = (workshopModDirectory) => {
         const archiveName = directoryFiles.find(filePath => filePath.includes('.zip'))
         || directoryFiles.find(filePath => filePath.includes('.scs'))
 
-        return _getModNameFromManifest(path.join(workshopModDirectory, archiveName))
+        const modName = _getModNameFromManifest(path.join(workshopModDirectory, archiveName))
+
+        /** @type {ModArchive} */
+        const result = {
+            modName,
+            path: workshopModDirectory
+        }
+
+        return result
     }
 
     // else we need to analyse the versions.sii to get 
@@ -88,9 +118,6 @@ const _extractModData = (workshopModDirectory) => {
 
     // TODO: 
     // - analyse versions.sii to get the correct archive (newest)
-    // - analyse manifest.ssi for the mod name (workshop: [name] - [modId])
-    //      -> refactor getArchivePathsOfDirectory to add a mod name to the path
-    //         since the workshop archives have arbitrary names
     /** @type {ModArchive} */
     const result = {
         modName: 'TODO',
@@ -107,7 +134,30 @@ const _extractModData = (workshopModDirectory) => {
  * @returns {ModArchive}
  */
 const _getModNameFromManifest = (modPath) => {
-    // extractFileFromArchive(modPath, 'manifest.sii')
+    try {
+        const MANIFEST_FILE = 'manifest.sii'
+
+        execute7zip([
+            'x',
+            modPath,
+            // mod name is defined in the root dir file manifest.sii
+            MANIFEST_FILE,
+            `-o${TEMP_DATA_DIR}`,
+            // force overwrite of previous extracted file
+            '-y'
+        ])
+
+        const extractedFilePath = path.join(TEMP_DATA_DIR, MANIFEST_FILE)
+        const manifestContent = fs.readFileSync(extractedFilePath, { encoding: 'utf-8' })
+
+        const displayNameLine = manifestContent.split('\n').find(line => line.includes('display_name:'))
+        const displayNameRegex = /display_name:\s*"([^"]+)"/
+        const displayNameMatch = displayNameLine.match(displayNameRegex)
+
+        return displayNameMatch?.at(1)
+    } catch (error) {
+        throw error
+    }
 }
 
 module.exports = {

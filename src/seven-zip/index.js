@@ -13,10 +13,9 @@ const execute7zip = (commandList) => {
         return execFileSync(
             SEVEN_ZIP_EXTERNAL_PATH,
             commandList,
-            { encoding: "utf8" }
+            { encoding: "utf8", stdio: [] }
         )
     } catch (error) {
-        console.log('7ZIP ERROR:', error)
         throw error
     }
 

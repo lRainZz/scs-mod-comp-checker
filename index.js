@@ -1,8 +1,8 @@
-const { analyseModsContent } = require('./src/analysis.js')
-const { gatherModDataFromArchives, getArchivePathsOfDirectory } = require('./src/archive.js')
+const { gatherModDataFromArchives, analyseModsContent } = require('./src/analysis.js')
+const { getArchivePathsOfLocalModDirectory } = require('./src/local.js')
 const { getArgs } = require('./src/args.js')
 const { writeResults } = require('./src/result-files.js')
-const { installSevenZip, uninstallSevenZip } = require('./src/seven-zip/index.js')
+const { installSevenZip, uninstallSevenZip, readFilePathsFromArchive } = require('./src/seven-zip/index.js')
 const { determineWorkshopFolder, getListOfWorkshopArchives } = require('./src/workshop.js')
 
 const setup = () => installSevenZip()
@@ -31,7 +31,7 @@ const main = async () => {
             manualSteamDir
         } = getArgs()
 
-        const modArchives = getArchivePathsOfDirectory(modDir)
+        const modArchives = getArchivePathsOfLocalModDirectory(modDir)
         const allArchives = [...modArchives]
 
         if (!excludeWorkshop) {
@@ -40,10 +40,10 @@ const main = async () => {
             allArchives.push(...workshopArchives)
         }
 
-        const modDataFromArchives = await gatherModDataFromArchives(allArchives)
+        const modDataFromArchives = await gatherModDataFromArchives(allArchives, withAutomatFiles)
         const results = await analyseModsContent(modDataFromArchives)
 
-        writeResults(results, showAllConflictingFiles, modNamesOnly, withAutomatFiles)
+        writeResults(results, showAllConflictingFiles, modNamesOnly)
     } catch (error) {
         console.error('Unexpected error', error)
         process.exit(1)
