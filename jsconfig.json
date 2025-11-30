@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "checkJs": true,
+        "strict": true,
+        "resolveJsonModule": true,
+        "module": "commonjs",
+        "target": "es2022",
+        "moduleResolution": "node",
+        "allowSyntheticDefaultImports": true,
+        "baseUrl": "./",
+        // "paths": {
+        //     "*": ["./*", "./types/*"]
+        // }
+    },
+    "include": ["src", "types"]
+}

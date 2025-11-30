@@ -6,7 +6,7 @@ const path = require('path')
  */
 const writeResults = (result, showAllConflictingFiles = false, modNamesOnly = false) => {
     const errorString = result.errors.length > 0
-        ? '\nCould not open/analyze the following mod archives:\n  - "' + result.errors.join('"\n  - "') + '"'
+        ? '\nCould not open/analyze the following mod archives:\n  - "' + result.errors.map(mod => mod.modName).join('"\n  - "') + '"'
         : ''
 
     if (result.duplicates.length === 0) {
@@ -106,10 +106,11 @@ const _buildResultPrintStructure = (resultDuplicates) => {
     /** @type {ResultStructure[]} */
     const resultPrintStructure = []
 
+    /** @type {string[]} */
     const conflictedMods = resultDuplicates.reduce((out, currentValue) => {
         out.push(...currentValue.mods)
         return out
-    }, [])
+    }, /** @type {string[]} */ ([]))
     .filter((value, index, array) => array.indexOf(value) === index)
 
     conflictedMods.forEach(modName => {
@@ -137,6 +138,7 @@ const _buildConflictsForMod = (modName, resultDuplicates) => {
     // create a copy of the original so we can alter
     // the mods sesction freely without disturbing
     // following iteration
+    /** @type {Duplicate[]} */
     const conflicts = JSON.parse(JSON.stringify(resultDuplicates.filter(dup => dup.mods.includes(modName))))
     // filter the current modName from the conflicted mods
     conflicts.forEach(dup => dup.mods.splice(dup.mods.indexOf(modName), 1))
@@ -155,10 +157,13 @@ const _buildConflictsForMod = (modName, resultDuplicates) => {
     //     { modName: 'mod1', files: ['file1'] },
     //     { modName: 'mod2', files: ['file1', 'file2'] }
     // ]
+    /**
+     * @type {Record<string, string[]>}
+     */
     const result = {}
 
     conflicts.forEach(({ filePath, mods }) => {
-        mods.forEach(mod => {
+        mods.forEach(/** @type { string} */ mod => {
             if (!result[mod]) {
                 result[mod] = []
             }

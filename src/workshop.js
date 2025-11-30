@@ -14,6 +14,7 @@ const ATS_APP_ID = '270880'
  * @returns {string} Path to the workshop folder
  */
 const determineWorkshopFolder = (analyseEts, manualPath = '') => {
+    /** @type {string | null} */
     let directoryPath = manualPath
 
     if (!manualPath) {
@@ -61,23 +62,7 @@ const getListOfWorkshopArchives = (workshopDirectory) => {
     .map(modPath => path.join(workshopDirectory, modPath))
     .filter(modPath => fs.lstatSync(modPath).isDirectory())
 
-
-    const workshopMods = modDirectories.map(dir => {
-        const errors = []
-
-        try {
-
-            // TODO:
-            // add errors to ModArchive type
-            // ALSO TODO:
-            // do the same for the MoData type and implement
-            // the change in local.js
-            return _extractModData(dir)
-        } catch (error) {
-            errors.push(error)
-            return null
-        }
-    })
+    const workshopMods = modDirectories.map(dir =>_extractModData(dir))
 
     console.log('workshop mods', workshopMods)
 
@@ -99,15 +84,29 @@ const _extractModData = (workshopModDirectory) => {
     // if there is only one archive present in the directory
     // wen can safely assume, that this is the actual mod
     if (onlyOneArchive) {
-        const archiveName = directoryFiles.find(filePath => filePath.includes('.zip'))
-        || directoryFiles.find(filePath => filePath.includes('.scs'))
-
-        const modName = _getModNameFromManifest(path.join(workshopModDirectory, archiveName))
+        // use the workshop folder name (workshop mod id) as fallback
+        const modNameFallback = path.basename(workshopModDirectory)
 
         /** @type {ModArchive} */
         const result = {
-            modName,
-            path: workshopModDirectory
+            path:    workshopModDirectory,
+            modName: modNameFallback,
+            error:   null
+        }
+
+        try {
+            const archiveName = directoryFiles.find(filePath => filePath.includes('.zip'))
+            || directoryFiles.find(filePath => filePath.includes('.scs'))
+
+            if (!archiveName) throw 'Could not determine archive name of single archive workshop mod'
+
+            result.modName = _getModNameFromManifest(path.join(workshopModDirectory, archiveName))
+        } catch (error) {
+            result.error = error
+
+            if (error instanceof Error) {
+                result.error = error?.message
+            }
         }
 
         return result
@@ -120,8 +119,9 @@ const _extractModData = (workshopModDirectory) => {
     // - analyse versions.sii to get the correct archive (newest)
     /** @type {ModArchive} */
     const result = {
+        path:    'TODO',
         modName: 'TODO',
-        path: 'TODO'
+        error:   'TODO'
     }
 
     return result
@@ -129,35 +129,35 @@ const _extractModData = (workshopModDirectory) => {
 
 /**
  * 
- * @param {string} modPath 
+ * @param {string} modPath
  * 
- * @returns {ModArchive}
+ * @returns {string}
  */
 const _getModNameFromManifest = (modPath) => {
-    try {
-        const MANIFEST_FILE = 'manifest.sii'
+    const MANIFEST_FILE = 'manifest.sii'
 
-        execute7zip([
-            'x',
-            modPath,
-            // mod name is defined in the root dir file manifest.sii
-            MANIFEST_FILE,
-            `-o${TEMP_DATA_DIR}`,
-            // force overwrite of previous extracted file
-            '-y'
-        ])
+    execute7zip([
+        'x',
+        modPath,
+        // mod name is defined in the root dir file manifest.sii
+        MANIFEST_FILE,
+        `-o${TEMP_DATA_DIR}`,
+        // force overwrite of previous extracted file
+        '-y'
+    ])
 
-        const extractedFilePath = path.join(TEMP_DATA_DIR, MANIFEST_FILE)
-        const manifestContent = fs.readFileSync(extractedFilePath, { encoding: 'utf-8' })
+    const extractedFilePath = path.join(TEMP_DATA_DIR, MANIFEST_FILE)
+    const manifestContent = fs.readFileSync(extractedFilePath, { encoding: 'utf-8' })
 
-        const displayNameLine = manifestContent.split('\n').find(line => line.includes('display_name:'))
-        const displayNameRegex = /display_name:\s*"([^"]+)"/
-        const displayNameMatch = displayNameLine.match(displayNameRegex)
+    const displayNameLine = manifestContent.split('\n').find(line => line.includes('display_name:'))
+    const displayNameRegex = /display_name:\s*"([^"]+)"/
+    const displayNameMatch = displayNameLine?.match(displayNameRegex)
 
-        return displayNameMatch?.at(1)
-    } catch (error) {
-        throw error
-    }
+    const name = displayNameMatch?.at(1)
+
+    if (!name) throw 'Could not determine workshop mod name from manifest'
+
+    return name
 }
 
 module.exports = {

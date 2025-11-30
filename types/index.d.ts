@@ -11,16 +11,13 @@ interface Arguments {
 interface ModArchive {
     modName: string
     path:    string
+    error:   any
 }
 
 interface Mod {
     modName: string
     files:   string[]
-}
-
-interface ModError {
-    modName: string
-    error:   string
+    error:   any
 }
 
 interface ModContent {
@@ -28,14 +25,9 @@ interface ModContent {
     errors:   string[]
 }
 
-interface ModData {
-    mods:      Mod[]
-    modErrors: ModError[]
-}
-
 interface AnalysisResult {
     duplicates: Duplicate[]
-    errors:     string[]
+    errors:     Mod[]
 }
 
 interface Duplicate {

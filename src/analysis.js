@@ -3,7 +3,7 @@ const { execute7zip } = require('./seven-zip/index.js')
 /**
  * @param {string} pathToArchive
  * 
- * @returns {Promise<string[]>} list of files in archive
+ * @returns {string[]} list of files in archive
  */
 const _listFilesOfArchive = (pathToArchive, withAutomatFiles = false) => {
     let output = ''
@@ -27,6 +27,7 @@ const _listFilesOfArchive = (pathToArchive, withAutomatFiles = false) => {
     // an entry looks like this:
     // date - time - file attributes - size uncompressed - size compressed - path
     // 2025-06-02 19:16:52 ....A      1398256         3082  vehicle/truck/upgrade/paintjob/scania.t/airbrush/accessories/acc_0.dds
+    /** @type {string[]} */
     const pathList = []
 
     output.trim().split('\n')
@@ -67,58 +68,50 @@ const _listFilesOfArchive = (pathToArchive, withAutomatFiles = false) => {
 /**
  * @param {ModArchive[]} archivesToCheck list of archive paths
  * 
- * @returns {Promise<MoData>}
+ * @returns {Mod[]}
  */
 const gatherModDataFromArchives = (archivesToCheck, withAutomatFiles = false) => {
-    const mods      = []
-    const modErrors = []
+    const mods = []
 
     for (const archive of archivesToCheck) {
-        const modName = archive.modName
+        /** @type {Mod} */
+        const mod = {
+            modName: archive.modName,
+            files:   [],
+            error:   null
+        }
 
         try {
-            const pathList = _listFilesOfArchive(archive.path, withAutomatFiles)
-
-            /** @type {Mod} */
-            const mod = {
-                modName,
-                files: pathList
-            }
-
-            mods.push(mod)
+            mod.files = _listFilesOfArchive(archive.path, withAutomatFiles)
         } catch (error) {
-            /** @type {ModError} */
-            const modError = {
-                modName,
-                error
-            }
-
-            modErrors.push(modError)
+            mod.error = error
         }
+
+        mods.push(mod)
     }
 
-    /** @type {ModData} */
-    const result = {
-        mods,
-        modErrors
-    }
-
-    return result
+    return mods
 }
 
 /**
- * @param {ModData} modsData
+ * @param {Mod[]} mods
  * 
  * @returns {Promise<AnalysisResult>}
  */
-const analyseModsContent = async (modsData) => {
+const analyseModsContent = async (mods) => {
+    /** @type {Duplicate[]} */
     const duplicates = []
-    const errors = []
+    /** @type {Mod[]} */
+    const modsWithErrors = []
 
-    modsData.mods.forEach(mod => {
+    mods.forEach(mod => {
+        if (mod.error) {
+            return modsWithErrors.push(mod)
+        }
+
         mod.files.forEach(filePath => {
             // checked if the current file is in other mods
-            const fileInOtherMods = modsData.mods.find(innerMods => innerMods.files.includes(filePath) && innerMods.modName !== mod.modName)
+            const fileInOtherMods = mods.find(innerMods => innerMods.files.includes(filePath) && innerMods.modName !== mod.modName)
 
             // if not, go to the next one
             if (!fileInOtherMods) {
@@ -130,6 +123,7 @@ const analyseModsContent = async (modsData) => {
 
             // if not, create the first duplicate entry
             if (!fileInDuplicates) {
+                /** @type {Duplicate} */
                 const newEntry = {
                     filePath,
                     mods: []
@@ -145,9 +139,7 @@ const analyseModsContent = async (modsData) => {
         })
     })
 
-    modsData.modErrors.forEach(mod => errors.push(mod.modName))
-
-    return { duplicates, errors }
+    return { duplicates, errors: modsWithErrors }
 }
 
 module.exports = {

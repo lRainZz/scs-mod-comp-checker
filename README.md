@@ -97,3 +97,4 @@ This project is licensed under the GPL-3.0 license
 - locked mods with scs extractor?
 - Tests!
 - UI?
+- file search (find specific file with path from error in mods)
