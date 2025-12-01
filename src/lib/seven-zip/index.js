@@ -8,12 +8,18 @@ const SEVEN_ZIP_EXTERNAL_PATH = path.join(TEMP_DATA_DIR, '7za.exe')
 const installSevenZip   = () => fs.copyFileSync(path.join(__dirname, '7za.exe'), SEVEN_ZIP_EXTERNAL_PATH)
 const uninstallSevenZip = () => fs.rmSync(SEVEN_ZIP_EXTERNAL_PATH)
 
+/**
+ * 
+ * @param {string[]} commandList
+ * 
+ * @returns {string} stdout/stderr result string
+ */
 const execute7zip = (commandList) => {
     try {
         return execFileSync(
             SEVEN_ZIP_EXTERNAL_PATH,
             commandList,
-            { encoding: "utf8", stdio: [] }
+            { encoding: 'utf8', stdio: [] }
         )
     } catch (error) {
         throw error

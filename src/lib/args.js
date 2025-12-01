@@ -31,7 +31,7 @@ const getArgs = () => {
 
     if (printVersion) {
         const { version } = require('../package.json')
-        console.log('\SMCC Version ' + version)
+        console.log('\nSMCC Version ' + version)
         process.exit(0)
     }
 
@@ -51,10 +51,16 @@ const getArgs = () => {
         process.exit(1)
     }
 
-    let manualSteamDir = null
+    let manualSteamDir
 
     if (!!useManualSteamDirArg) {
         manualSteamDir = useManualSteamDirArg.split('=').at(1)
+
+        if (manualSteamDir?.includes('workshop')) {
+            console.log('\nPlease supply only the Steam/steamapps base path without "/workshop" or "/workshop/content"')
+            process.exit(1)
+        }
+
         console.log('\nUsing manual Steam directory "'+ manualSteamDir +'"')
     }
 
@@ -108,8 +114,7 @@ All flags must come after the the path to the mod folder if provided!
         If SMCC can't detect your steam folder, or your ETS2/ATS is installed
         in a separate library from your main Steam installation, you need to
         supply the path to your steam library manually. This will look at the
-        supplied path an add "steamapps", "workshop", "content", "[ETS2/ATS-AppId]"
-        by iteself if missing.
+        supplied path an add "steamapps" if missing.
 
         Example:
             Default Steam path:
@@ -126,13 +131,11 @@ All flags must come after the the path to the mod folder if provided!
                 smcc.exe --steam-dir="D:\\MySteamLibrary"
             OR
                 smcc.exe --steam-dir="D:\\MySteamLibrary\\steamapps"
-            OR
-                smcc.exe --steam-dir="D:\\MySteamLibrary\\steamapps\\workshop"
-            OR
-                smcc.exe --steam-dir="D:\\MySteamLibrary\\steamapps\\workshop\\content"
 `)
 }
 
+const PRG_ARGS = getArgs()
+
 module.exports = {
-    getArgs
+    PRG_ARGS
 }

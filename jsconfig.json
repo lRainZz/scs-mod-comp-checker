@@ -8,9 +8,6 @@
         "moduleResolution": "node",
         "allowSyntheticDefaultImports": true,
         "baseUrl": "./",
-        // "paths": {
-        //     "*": ["./*", "./types/*"]
-        // }
     },
-    "include": ["src", "types"]
+    "include": [ "src", "types" ],
 }

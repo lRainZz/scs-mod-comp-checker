@@ -1,9 +1,11 @@
 const { gatherModDataFromArchives, analyseModsContent } = require('./src/analysis.js')
 const { getArchivePathsOfLocalModDirectory } = require('./src/local.js')
-const { getArgs } = require('./src/args.js')
+const { PRG_ARGS } = require('./src/lib/args.js')
 const { writeResults } = require('./src/result-files.js')
-const { installSevenZip, uninstallSevenZip, readFilePathsFromArchive } = require('./src/seven-zip/index.js')
+const { installSevenZip, uninstallSevenZip } = require('./src/lib/seven-zip/index.js')
 const { determineWorkshopFolder, getListOfWorkshopArchives } = require('./src/workshop.js')
+const { getGameVersion } = require('./src/game-version.js')
+const { GAME_FOLDER } = require('./src/lib/game-installation.js')
 
 const setup = () => installSevenZip()
 const cleanup = () => uninstallSevenZip()
@@ -27,20 +29,22 @@ const main = async () => {
             showAllConflictingFiles,
             modNamesOnly,
             excludeWorkshop,
-            analyseEts,
             manualSteamDir
-        } = getArgs()
+        } = PRG_ARGS
+
+        const gameVersion = getGameVersion(manualSteamDir)
+        console.log('Analysing', GAME_FOLDER, '- v' + gameVersion)
 
         const modArchives = getArchivePathsOfLocalModDirectory(modDir)
         const allArchives = [...modArchives]
 
         if (!excludeWorkshop) {
-            const workshopDirectory = determineWorkshopFolder(analyseEts, manualSteamDir)
-            const workshopArchives = getListOfWorkshopArchives(workshopDirectory)
+            const workshopDirectory = determineWorkshopFolder(manualSteamDir)
+            const workshopArchives = getListOfWorkshopArchives(workshopDirectory, gameVersion)
             allArchives.push(...workshopArchives)
         }
 
-        const modDataFromArchives = await gatherModDataFromArchives(allArchives, withAutomatFiles)
+        const modDataFromArchives = gatherModDataFromArchives(allArchives, withAutomatFiles)
         const results = await analyseModsContent(modDataFromArchives)
 
         writeResults(results, showAllConflictingFiles, modNamesOnly)

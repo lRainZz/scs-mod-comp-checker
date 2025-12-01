@@ -66,28 +66,23 @@ All flags must come after the the path to the mod folder if provided!
         If SMCC can't detect your steam folder, or your ETS2/ATS is installed
         in a separate library from your main Steam installation, you need to
         supply the path to your steam library manually. This will look at the
-        supplied path an add "steamapps", "workshop", "content", "[ETS2/ATS-AppId]"
-        by iteself if missing.
+        supplied path an add "steamapps" if missing.
 
         Example:
             Default Steam path:
-                "C:\\Program Files\\Steam"
+                "C:\Program Files\Steam"
             Default Steam workshop path:
-                "C:\\Program Files\\Steam\\steamapps\\workshop\\content"
+                "C:\Program Files\Steam\steamapps\workshop\content"
 
             Custom Steam library path:
-                "D:\\MySteamLibrary"
+                "D:\MySteamLibrary"
             Custom Steam workshop path:
-                "D:\\MySteamLibrary\\steamapps\\workshop\\content"
+                "D:\MySteamLibrary\steamapps\workshop\content"
 
             Call SMCC like this:
-                smcc.exe --steam-dir="D:\\MySteamLibrary"
+                smcc.exe --steam-dir="D:\MySteamLibrary"
             OR
-                smcc.exe --steam-dir="D:\\MySteamLibrary\\steamapps"
-            OR
-                smcc.exe --steam-dir="D:\\MySteamLibrary\\steamapps\\workshop"
-            OR
-                smcc.exe --steam-dir="D:\\MySteamLibrary\\steamapps\\workshop\\content"
+                smcc.exe --steam-dir="D:\MySteamLibrary\steamapps"
 ```
 
 ## License
@@ -95,6 +90,7 @@ This project is licensed under the GPL-3.0 license
 
 # TODO
 - locked mods with scs extractor?
+- choice of game version for workshop mods
 - Tests!
 - UI?
 - file search (find specific file with path from error in mods)

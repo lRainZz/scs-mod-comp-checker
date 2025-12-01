@@ -1,4 +1,4 @@
-const { execute7zip } = require('./seven-zip/index.js')
+const { execute7zip } = require('./lib/seven-zip/index.js')
 
 /**
  * @param {string} pathToArchive
@@ -10,8 +10,8 @@ const _listFilesOfArchive = (pathToArchive, withAutomatFiles = false) => {
 
     try {
         output = execute7zip([
-            "l",
-            "-ba",
+            'l',
+            '-ba',
             pathToArchive
         ])
     } catch (error) {

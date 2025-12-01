@@ -5,7 +5,7 @@ interface Arguments {
     modNamesOnly:            boolean
     excludeWorkshop:         boolean
     analyseEts:              boolean
-    manualSteamDir:          string | null
+    manualSteamDir:          string | undefined
 }
 
 interface ModArchive {
@@ -43,4 +43,10 @@ interface ResultStructure {
 interface Conflict {
     modName: string
     files:   string[]
+}
+
+interface PackageVersionBlock {
+    universal:          boolean
+    packageName:        string
+    compatibleVersions: string[]
 }

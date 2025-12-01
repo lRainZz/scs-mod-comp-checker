@@ -1,47 +1,29 @@
-const { execSync } = require('child_process')
 const path = require('path')
 const fs = require('fs')
-const { execute7zip } = require('./seven-zip/index.js')
-const TEMP_DATA_DIR = require('./temp-dir.js')
-
-const ETS_APP_ID = '227300'
-const ATS_APP_ID = '270880'
+const { execute7zip } = require('./lib/seven-zip/index.js')
+const TEMP_DATA_DIR = require('./lib/temp-dir.js')
+const { getSteamInstallationFolder } = require('./steam-dir.js')
+const { GAME_ID } = require('./lib/game-installation.js')
 
 /**
- * @param {boolean} analyseEts
  * @param {string} manualPath
  * 
  * @returns {string} Path to the workshop folder
  */
-const determineWorkshopFolder = (analyseEts, manualPath = '') => {
+const determineWorkshopFolder = (manualPath = '') => {
     /** @type {string | null} */
     let directoryPath = manualPath
 
     if (!manualPath) {
-        // try to read the steam install folder from the windows registry
-        const output = execSync(
-            'reg query "HKCU\\Software\\Valve\\Steam" /v SteamPath',
-            { encoding: 'utf-8' }
-        )
-
-        const match = output.match(/SteamPath\s+REG_SZ\s+(.+)/);
-        directoryPath = match ? match[1].trim().replace(/\\\\/g, "\\") : null
-
-        if (!directoryPath) {
-            console.log('\nCould not determine Steam workshop directory, please use "--steam-dir="path/to/your/steam/dir/with/ets/or/ats" to supply it manually')
-            console.log('Or exlude the Steam workshop analysis by using "-e, --exclude-workshop-mods"')
-            process.exit(1)
-        }
+        directoryPath = getSteamInstallationFolder()
     }
-
-    const appId = analyseEts ? ETS_APP_ID : ATS_APP_ID
 
     directoryPath = path.join(
         directoryPath,
         !directoryPath.includes('steamapps') ? 'steamapps' : '',
-        !directoryPath.includes('workshop') ? 'workshop' : '',
-        !directoryPath.includes('content') ? 'content' : '',
-        appId
+        'workshop',
+        'content',
+        GAME_ID
     )
 
     if (!fs.existsSync(directoryPath)) {
@@ -54,27 +36,29 @@ const determineWorkshopFolder = (analyseEts, manualPath = '') => {
 
 /**
  * @param {string} workshopDirectory
+ * @param {string} gameVersion
  * 
  * @returns {ModArchive[]}
  */
-const getListOfWorkshopArchives = (workshopDirectory) => {
+const getListOfWorkshopArchives = (workshopDirectory, gameVersion) => {
     const modDirectories = fs.readdirSync(workshopDirectory)
     .map(modPath => path.join(workshopDirectory, modPath))
     .filter(modPath => fs.lstatSync(modPath).isDirectory())
 
-    const workshopMods = modDirectories.map(dir =>_extractModData(dir))
+    const workshopMods = modDirectories.map(dir =>_extractModData(dir, gameVersion))
 
-    console.log('workshop mods', workshopMods)
+    // console.log('workshop mods', workshopMods)
 
     return [] 
 }
 
 /**
  * @param {string} workshopModDirectory
+ * @param {string} gameVersion
  * 
  * @returns {ModArchive} for the given mod dir
  */
-const _extractModData = (workshopModDirectory) => {
+const _extractModData = (workshopModDirectory, gameVersion) => {
     const directoryFiles = fs.readdirSync(workshopModDirectory)
 
     const onlyOneArchive = directoryFiles
@@ -100,6 +84,10 @@ const _extractModData = (workshopModDirectory) => {
             // wen can safely assume, that this is the actual mod
             archiveToUse = directoryFiles.find(filePath => filePath.includes('.zip'))
             || directoryFiles.find(filePath => filePath.includes('.scs'))
+
+            // TODO:
+            // using game version
+            // console.log('analyzing', _getArchiveToAnalyzeFromVersionsSii(workshopModDirectory))
         } else {
             // else we need to analyse the versions.sii to get 
             // the correct archive
@@ -151,6 +139,61 @@ const _getModNameFromManifest = (modPath) => {
     if (!name) throw 'Could not determine workshop mod name from manifest'
 
     return name
+}
+
+/**
+ * this function is NOT utilizing a real sii parser
+ * the determination of the correct version is done by simple
+ * string comparisons and simple keyword analysis
+ * 
+ * @param {string} modPath path to the mod folder
+ * 
+*/
+// * @returns {string} name of the archive to use (without extension!)
+const _getArchiveToAnalyzeFromVersionsSii = (modPath) => {
+    const VERSIONS_FILE = 'versions.sii'
+
+    const versionsFileContent = fs.readFileSync(path.join(modPath, VERSIONS_FILE), { encoding: 'utf-8' })
+    const packageVersionBlocks = _parseVersionSii(versionsFileContent)
+
+    // if there is a universal block, we use that
+
+    return packageVersionBlocks
+}
+
+/**
+ * @param {string} versionSiiContent 
+ * 
+ * @returns {PackageVersionBlock[]}
+ */
+const _parseVersionSii = (versionSiiContent) => {
+    const PACKAGE_VERSION_BLOCK_REGEX = /package_version_info\s*:\s*([^\s]+)\s*\{([\s\S]*?)\}/g
+
+    /** @type {PackageVersionBlock[]} */
+    const packageVersionBlocks = []
+
+    let match
+
+    // get all package_version_info blocks
+     while ((match = PACKAGE_VERSION_BLOCK_REGEX.exec(versionSiiContent)) !== null) {
+        const body = match[2]
+
+        const nameMatch   = body.match(/package_name:\s*"([^"]+)"/)
+        const packageName = nameMatch ? nameMatch[1] : 'THIS_CAN_NOT_HAPPEN_PROVE_ME_WRONG'
+
+        const compatibleVersions = [...body.matchAll(/compatible_versions\[\]:\s*"([^"]+)"/g)].map(match => match[1])
+
+        /** @type {PackageVersionBlock} */
+        const pacakgeVersionBlock = {
+            packageName,
+            compatibleVersions,
+            universal: compatibleVersions.length === 0
+        }
+
+        packageVersionBlocks.push(pacakgeVersionBlock)
+    }
+
+    return packageVersionBlocks
 }
 
 module.exports = {
