@@ -81,47 +81,40 @@ const _extractModData = (workshopModDirectory) => {
     .filter(filePath => filePath.includes('.zip') || filePath.includes('.scs'))
     .length === 1
 
-    // if there is only one archive present in the directory
-    // wen can safely assume, that this is the actual mod
-    if (onlyOneArchive) {
-        // use the workshop folder name (workshop mod id) as fallback
-        const modNameFallback = path.basename(workshopModDirectory)
+    // use the workshop folder name (workshop mod id) as fallback
+    const modNameFallback = path.basename(workshopModDirectory)
 
-        /** @type {ModArchive} */
-        const result = {
-            path:    workshopModDirectory,
-            modName: modNameFallback,
-            error:   null
-        }
-
-        try {
-            const archiveName = directoryFiles.find(filePath => filePath.includes('.zip'))
-            || directoryFiles.find(filePath => filePath.includes('.scs'))
-
-            if (!archiveName) throw 'Could not determine archive name of single archive workshop mod'
-
-            result.modName = _getModNameFromManifest(path.join(workshopModDirectory, archiveName))
-        } catch (error) {
-            result.error = error
-
-            if (error instanceof Error) {
-                result.error = error?.message
-            }
-        }
-
-        return result
-    }
-
-    // else we need to analyse the versions.sii to get 
-    // the correct archive
-
-    // TODO: 
-    // - analyse versions.sii to get the correct archive (newest)
     /** @type {ModArchive} */
     const result = {
-        path:    'TODO',
-        modName: 'TODO',
-        error:   'TODO'
+        path:    workshopModDirectory,
+        modName: modNameFallback,
+        error:   null
+    }
+
+    try {
+        /** @type {string | undefined} */
+        let archiveToUse
+
+        if (onlyOneArchive) {
+            // if there is only one archive present in the directory
+            // wen can safely assume, that this is the actual mod
+            archiveToUse = directoryFiles.find(filePath => filePath.includes('.zip'))
+            || directoryFiles.find(filePath => filePath.includes('.scs'))
+        } else {
+            // else we need to analyse the versions.sii to get 
+            // the correct archive
+            // TODO:
+        }
+
+        if (!archiveToUse) throw 'Could not determine archive name of workshop mod'
+
+        result.modName = _getModNameFromManifest(path.join(workshopModDirectory, archiveToUse))
+    } catch (error) {
+        result.error = error
+
+        if (error instanceof Error) {
+            result.error = error?.message
+        }
     }
 
     return result
