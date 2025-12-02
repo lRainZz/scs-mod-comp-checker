@@ -9,6 +9,7 @@
     "scripts": {
         "check:exe": "npm run build && smcc.exe",
         "check": "node index.js",
+        "debug": "node src/lib/steam.js",
         "build": "pkg --config pkg-config.json index.js -o smcc"
     },
     "devDependencies": {

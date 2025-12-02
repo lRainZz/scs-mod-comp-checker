@@ -50,3 +50,8 @@ interface PackageVersionBlock {
     packageName:        string
     compatibleVersions: string[]
 }
+
+interface SteamLibrary {
+    path: string
+    apps: string[]
+}
