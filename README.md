@@ -1,5 +1,5 @@
 # SCS Mod Compatibility Checker - SMCC
-This programm is intended for checking if any of the installed mods in an ETS2/ATS mod directory are conflicting themselves in any way. It compares the contents of a given mod folder as well as the workshop contents of either ETS2 or ATS, depending on the settings.
+This programm is intended for checking if any of the installed mods in an ETS2/ATS mod directory are conflicting themselves in any way. It compares the contents of the local mod folder as well as the workshop contents of either ETS2 or ATS, depending on the settings.
 
 ## How To
 ### Download
@@ -22,9 +22,10 @@ And compare the resulting hash to the one listed in the GitHub release.
 > ONLY EXECUTE SMCC IF THE HASH IS VALID! ELSE YOU ARE RISKING INFECTION OF YOUR PC!
 
 ### Execution
-To use SMCC either paste it directly to your mod folder and execute it by double-clicking or paste it anywhere you want and provide the path to your mod folder via cmd line:
+To use SMCC either paste it anywhere you like and execute it by double-clicking or call it via the cmd line to supply extra parameters for fine tuning. SMCC will pick up your installation locations and local mod directory automatically!
 
-`smcc.exe "C:\path\to\your\mod\folder"`
+> By default the ETS2 mods are analyzed, if you want to execute it for ATS, call it via the cmd with the `--ats` argument  
+> `$ smcc.exe --ats`
 
 In both cases this will result in a `mod-analysis-result.txt` located where SMCC was started from. This file contains the gathered information in a human readable format.
 
@@ -34,12 +35,6 @@ By default, SMCC will ignore any 'automat/' files and print out
 up to 3 conflicting files per mod, as well as tell you how many
 more files are conflicted. To fine tune your result, you can use
 the following cmd line flags.
-
-If the flag '--ats' is absent, the ETS2 workshop content will
-be tried to be analyzed.
-
-All flags must come after the the path to the mod folder if provided!
-'smcc.exe [path-to-mod-directory] [flags]'
 
     -h, --help
         Print the cmd line help
@@ -62,27 +57,8 @@ All flags must come after the the path to the mod folder if provided!
     --ats
         Analyse the workshop contens of ATS instead of ETS2
 
-    --steam-dir=[path/to/your/steam/dir]
-        If SMCC can't detect your steam folder, or your ETS2/ATS is installed
-        in a separate library from your main Steam installation, you need to
-        supply the path to your steam library manually. This will look at the
-        supplied path an add "steamapps" if missing.
-
-        Example:
-            Default Steam path:
-                "C:\Program Files\Steam"
-            Default Steam workshop path:
-                "C:\Program Files\Steam\steamapps\workshop\content"
-
-            Custom Steam library path:
-                "D:\MySteamLibrary"
-            Custom Steam workshop path:
-                "D:\MySteamLibrary\steamapps\workshop\content"
-
-            Call SMCC like this:
-                smcc.exe --steam-dir="D:\MySteamLibrary"
-            OR
-                smcc.exe --steam-dir="D:\MySteamLibrary\steamapps"
+    --mod-dir
+        Analyse a different mod folder than the one under <USERPROFILE>/Documents/<ETS2_or_ATS>/mod
 ```
 
 ## License

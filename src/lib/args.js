@@ -63,16 +63,12 @@ const getArgs = () => {
 const _printHelp = () => {
     console.info(
 `
-\nBy default, SMCC will ignore any 'automat/' files and print out
+SMCC - help
+
+By default, SMCC will ignore any 'automat/' files and print out
 up to 3 conflicting files per mod, as well as tell you how many
 more files are conflicted. To fine tune your result, you can use
 the following cmd line flags.
-
-If the flag '--ats' is absent, the ETS2 workshop content will
-be tried to be analyzed.
-
-All flags must come after the the path to the mod folder if provided!
-'smcc.exe [path-to-mod-directory] [flags]'
 
     -h, --help
         Print the cmd line help
@@ -95,28 +91,8 @@ All flags must come after the the path to the mod folder if provided!
     --ats
         Analyse the workshop contens of ATS instead of ETS2
 
-    --steam-dir=[path/to/your/steam/dir]
-        If SMCC can't detect your steam folder, or your ETS2/ATS is installed
-        in a separate library from your main Steam installation, you need to
-        supply the path to your steam library manually. This will look at the
-        supplied path an add "steamapps" if missing.
-
-        Example:
-            Default Steam path:
-                "C:\\Program Files\\Steam"
-            Default Steam workshop path:
-                "C:\\Program Files\\Steam\\steamapps\\workshop\\content"
-
-            Custom Steam library path:
-                "D:\\MySteamLibrary"
-            Custom Steam workshop path:
-                "D:\\MySteamLibrary\\steamapps\\workshop\\content"
-
-            Call SMCC like this:
-                smcc.exe --steam-dir="D:\\MySteamLibrary"
-            OR
-                smcc.exe --steam-dir="D:\\MySteamLibrary\\steamapps"
-`)
+    --mod-dir
+        Analyse a different mod folder than the one under <USERPROFILE>/Documents/<ETS2_or_ATS>/mod`)
 }
 
 const PRG_ARGS = getArgs()
