@@ -1,15 +1,16 @@
 const { execSync } = require('child_process')
 const fs = require('fs')
 const path = require('path')
-const { setEnvironmentData } = require('worker_threads')
+const { ETS_APP_ID } = require('./args.js')
 
 /**
  * 
- * @param {string} appId 
+ * @param {string} appId
+ * @param {string} [customModDir]
  * 
- * @returns {{ gameDir: string, workshopDir: string}} path to installation of requested appId
+ * @returns {SteamLocations} path to installation of requested appId
  */
-const findSteamGameInstall = (appId) => {
+const findSteamGameInstall = (appId, customModDir = undefined) => {
     // the libraryfolders.vdf contains iformation which steam libs exist,
     // where they are located and wihch games they contain
     const libraryVdfPath = path.join(STEAM_ROOT, 'steamapps', 'libraryfolders.vdf')
@@ -36,7 +37,7 @@ const findSteamGameInstall = (appId) => {
 
     const acfContent = fs.readFileSync(appAcf, 'utf-8')
     const installDirLine = acfContent.match(/"installdir"\s*"([^"]+)"/)
-    const installDirName = installDirLine?.at(1)
+    const installDirName = installDirLine?.at(1)?.trim()
 
     if (!installDirName) {
         throw new Error(`Could not determine install folder of "${appId}" in library "${appLibrary.path}"`)
@@ -57,14 +58,60 @@ const findSteamGameInstall = (appId) => {
         appId
     )
 
+    let fullPathToModDir = customModDir
+
+    if (!customModDir) {
+        if (!process.env.USERPROFILE) {
+            throw new Error('\nCould not access %USERPROFILE%, please provide a custom mod dir via "--mod-dir=<path/to/your/mod/directory>"')
+        }
+
+        fullPathToModDir = path.join(
+            process.env.USERPROFILE,
+            'Documents',
+            appId === ETS_APP_ID ? 'Euro Truck Simulator 2' : 'American Truck Simulator',
+            'mod'
+        )
+    }
+
     const result = {
-        gameDir: fullPathToApp,
+        name:        installDirName,
+        gameDir:     fullPathToApp,
+        modDir:      fullPathToModDir,
         workshopDir: pathToAppWorkshop
     }
 
-    console.log(result)
-
     return result
+}
+
+/**
+ * @param {string }appId
+ * @param {string} gameDir
+ * 
+ * @returns {string} the game version
+ */
+const getGameVersion = (appId, gameDir) => {
+    try {
+        const pathToGameExe = path.join(
+            gameDir,
+            'bin',
+            'win_x64',
+            appId === ETS_APP_ID ? 'eurotrucks2.exe' : 'amtrucks.exe'
+        )
+
+        const version = execSync(
+            `powershell -command "(Get-Item '${pathToGameExe}').VersionInfo.FileVersion"`
+        )
+        // the version string contains a hash section that we do not want, so well cut it off
+        // - "1.57.2.4 (a7624b40b34b6135e6ed1cd5b813b17346746798)"
+        .toString().trim().split(' ').at(0)
+
+        if (!version) throw 'version-not-detected'
+
+        return version
+    } catch (error) {
+        console.error('\nCould not determine game version')
+        process.exit(1)
+    }
 }
 
 /**
@@ -82,8 +129,8 @@ const _getSteamRoot = () => {
 
     // TODO move to a higher level
     if (!directoryPath) {
-        console.log('\nCould not determine Steam workshop directory, please use "--steam-dir="path/to/your/steam/dir/with/ets/or/ats" to supply it manually')
-        console.log('Or exlude the Steam workshop analysis by using "-e, --exclude-workshop-mods"')
+        console.error('\nCould not determine Steam workshop directory, please use "--steam-dir="path/to/your/steam/dir/with/ets/or/ats" to supply it manually')
+        console.error('Or exlude the Steam workshop analysis by using "-e, --exclude-workshop-mods"')
         process.exit(1)
     }
 
@@ -154,7 +201,10 @@ const _parseLibraryFoldersFromVdf = (vdfContent) => {
 
 const STEAM_ROOT = _getSteamRoot()
 
+findSteamGameInstall('227300')
+
 module.exports = {
     STEAM_ROOT,
-    findSteamGameInstall
+    findSteamGameInstall,
+    getGameVersion
 }

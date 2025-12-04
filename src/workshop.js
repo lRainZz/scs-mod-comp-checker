@@ -2,37 +2,6 @@ const path = require('path')
 const fs = require('fs')
 const { execute7zip } = require('./lib/seven-zip/index.js')
 const TEMP_DATA_DIR = require('./lib/temp-dir.js')
-const { getSteamInstallationFolder } = require('./steam-dir.js')
-const { GAME_ID } = require('./lib/game-installation.js')
-
-/**
- * @param {string} manualPath
- * 
- * @returns {string} Path to the workshop folder
- */
-const determineWorkshopFolder = (manualPath = '') => {
-    /** @type {string | null} */
-    let directoryPath = manualPath
-
-    if (!manualPath) {
-        directoryPath = getSteamInstallationFolder()
-    }
-
-    directoryPath = path.join(
-        directoryPath,
-        !directoryPath.includes('steamapps') ? 'steamapps' : '',
-        'workshop',
-        'content',
-        GAME_ID
-    )
-
-    if (!fs.existsSync(directoryPath)) {
-        console.log('\nCould not read workshop directory "'+ directoryPath + '"')
-        process.exit(1)
-    }
-
-    return directoryPath
-}
 
 /**
  * @param {string} workshopDirectory
@@ -197,7 +166,6 @@ const _parseVersionSii = (versionSiiContent) => {
 }
 
 module.exports = {
-    determineWorkshopFolder,
     getListOfWorkshopArchives
 }
 

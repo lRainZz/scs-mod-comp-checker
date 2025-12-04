@@ -1,18 +1,17 @@
 const { gatherModDataFromArchives, analyseModsContent } = require('./src/analysis.js')
-const { getArchivePathsOfLocalModDirectory } = require('./src/local.js')
+const { getModArchivesOfLocalModDirectory } = require('./src/local.js')
 const { PRG_ARGS } = require('./src/lib/args.js')
 const { writeResults } = require('./src/result-files.js')
 const { installSevenZip, uninstallSevenZip } = require('./src/lib/seven-zip/index.js')
-const { determineWorkshopFolder, getListOfWorkshopArchives } = require('./src/workshop.js')
-const { getGameVersion } = require('./src/game-version.js')
-const { GAME_FOLDER } = require('./src/lib/game-installation.js')
+const { getListOfWorkshopArchives } = require('./src/workshop.js')
+const { findSteamGameInstall, getGameVersion } = require('./src/lib/steam.js')
 
 const setup = () => installSevenZip()
 const cleanup = () => uninstallSevenZip()
 
 // register cleanup for any kind of shutdown
 process.on('exit', cleanup)
-process.on('SIGINT', () => { 
+process.on('SIGINT', () => {
     cleanup()
     process.exit()
 })
@@ -24,23 +23,31 @@ process.on('SIGTERM', () => {
 const main = async () => {
     try {
         const {
-            modDir,
+            customModDir,
             withAutomatFiles,
             showAllConflictingFiles,
             modNamesOnly,
             excludeWorkshop,
-            manualSteamDir
+            appId
         } = PRG_ARGS
 
-        const gameVersion = getGameVersion(manualSteamDir)
-        console.log('Analysing', GAME_FOLDER, '- v' + gameVersion)
+        const {
+            name,
+            gameDir,
+            modDir,
+            workshopDir
+        } = findSteamGameInstall(appId, customModDir)
 
-        const modArchives = getArchivePathsOfLocalModDirectory(modDir)
+        const gameVersion = getGameVersion(appId, gameDir)
+        console.info(`Analysing "${name}" - v ${gameVersion}`)
+        console.info(`\nMod directory: "${modDir}"`)
+        console.info(`Workshop directory: "${workshopDir}"`)
+
+        const modArchives = getModArchivesOfLocalModDirectory(modDir)
         const allArchives = [...modArchives]
 
         if (!excludeWorkshop) {
-            const workshopDirectory = determineWorkshopFolder(manualSteamDir)
-            const workshopArchives = getListOfWorkshopArchives(workshopDirectory, gameVersion)
+            const workshopArchives = getListOfWorkshopArchives(workshopDir, gameVersion)
             allArchives.push(...workshopArchives)
         }
 

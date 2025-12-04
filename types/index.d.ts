@@ -1,11 +1,11 @@
 interface Arguments {
-    modDir:                  string
     withAutomatFiles:        boolean
     showAllConflictingFiles: boolean
     modNamesOnly:            boolean
     excludeWorkshop:         boolean
-    analyseEts:              boolean
-    manualSteamDir:          string | undefined
+    appId:                   string
+    customModDir?:           string
+    manualSteamDir?:         string
 }
 
 interface ModArchive {
@@ -49,6 +49,13 @@ interface PackageVersionBlock {
     universal:          boolean
     packageName:        string
     compatibleVersions: string[]
+}
+
+interface SteamLocations {
+    name:        string
+    gameDir:     string
+    modDir?:     string
+    workshopDir: string
 }
 
 interface SteamLibrary {

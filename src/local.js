@@ -6,7 +6,7 @@ const path = require('path')
  * 
  * @returns {ModArchive[]} list of valid archives
  */
-const getArchivePathsOfLocalModDirectory = (directory) => {
+const getModArchivesOfLocalModDirectory = (directory) => {
     const paths = fs.readdirSync(directory)
     // ets only supports archives in scs or zip format
     // no need to check for other formats or directories
@@ -25,5 +25,5 @@ const getArchivePathsOfLocalModDirectory = (directory) => {
 }
 
 module.exports = {
-    getArchivePathsOfLocalModDirectory
+    getModArchivesOfLocalModDirectory
 }

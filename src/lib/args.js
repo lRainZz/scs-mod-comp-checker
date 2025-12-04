@@ -1,17 +1,13 @@
 const fs = require('fs')
 
+const ETS_APP_ID = '227300'
+const ATS_APP_ID = '270880'
+
 /**
  * @returns {Arguments}
  */
 const getArgs = () => {
     const args = process.argv
-    // arg[0] - should be the node path
-    // arg[1] - the command itself
-    // arg[2] - the first passed command
-    // if args[2] contains a flag (starting with '-' or '--'),
-    // we assume the user wanted to execute smcc inside the mod folder
-    // so we clear the modDir
-    let modDir = args[2]?.replace(/^-{1,2}.*/g, '')
 
     // args with shorthands
     const needsHelp               = args.includes('-h') || args.includes('--help')
@@ -22,7 +18,7 @@ const getArgs = () => {
     const excludeWorkshop         = args.includes('-e') || args.includes('--exclude-workshop-mods')
     // special args
     const analyseEts              = !args.includes('--ats')
-    const useManualSteamDirArg    = args.find(arg => arg.includes('--steam-dir'))
+    const useCustomModDirArg      = args.find(arg => arg.includes('--mod-dir'))
 
     if (needsHelp) {
         _printHelp()
@@ -30,53 +26,42 @@ const getArgs = () => {
     }
 
     if (printVersion) {
-        const { version } = require('../package.json')
-        console.log('\nSMCC Version ' + version)
+        const { version } = require('../../package.json')
+        console.info('\nSMCC Version ' + version)
         process.exit(0)
     }
 
-    if (!modDir?.trim()) {
-        const currentDir = process.cwd()
-        console.log('\nMod directory missing, trying current directory "'+ currentDir + '"')
-        modDir = currentDir
-    }
+    // build the default mod dir if no custom one is supplied
+    let customModDir
 
-    if (!fs.existsSync(modDir) || !fs.lstatSync(modDir).isDirectory()) {
-        console.log(`\nInvalid mod directory "${modDir}" either does not exist or is not a directory`)
-        process.exit(1)
+    if (!!useCustomModDirArg) {
+        customModDir = useCustomModDirArg.split('=').at(1)
+
+        if (!customModDir || !fs.existsSync(customModDir) || !fs.lstatSync(customModDir).isDirectory()) {
+            console.error(`\nInvalid mod directory "${customModDir}", directory either does not exist or is not a directory`)
+            process.exit(1)
+        }
     }
 
     if (showAllConflictingFiles && modNamesOnly) {
-        console.log('\nCan not show all conflicting files and none at the same time, either use "-a" OR "-m"')
+        console.error('\nCan not show all conflicting files and none at the same time, either use "-a" OR "-m"')
         process.exit(1)
     }
 
-    let manualSteamDir
-
-    if (!!useManualSteamDirArg) {
-        manualSteamDir = useManualSteamDirArg.split('=').at(1)
-
-        if (manualSteamDir?.includes('workshop')) {
-            console.log('\nPlease supply only the Steam/steamapps base path without "/workshop" or "/workshop/content"')
-            process.exit(1)
-        }
-
-        console.log('\nUsing manual Steam directory "'+ manualSteamDir +'"')
-    }
+    const appId = analyseEts ? ETS_APP_ID : ATS_APP_ID
 
     return {
-        modDir,
+        customModDir,
         withAutomatFiles,
         showAllConflictingFiles,
         modNamesOnly,
         excludeWorkshop,
-        analyseEts,
-        manualSteamDir
+        appId
     }
 }
 
 const _printHelp = () => {
-    console.log(
+    console.info(
 `
 \nBy default, SMCC will ignore any 'automat/' files and print out
 up to 3 conflicting files per mod, as well as tell you how many
@@ -137,5 +122,7 @@ All flags must come after the the path to the mod folder if provided!
 const PRG_ARGS = getArgs()
 
 module.exports = {
-    PRG_ARGS
+    PRG_ARGS,
+    ETS_APP_ID,
+    ATS_APP_ID
 }
