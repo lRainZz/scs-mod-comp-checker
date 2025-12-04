@@ -1,3 +1,4 @@
+const fs = require('fs')
 const { execute7zip } = require('./lib/seven-zip/index.js')
 
 /**
@@ -66,7 +67,7 @@ const _listFilesOfArchive = (pathToArchive, withAutomatFiles = false) => {
 }
 
 /**
- * @param {ModArchive[]} archivesToCheck list of archive paths
+ * @param {ModContainer[]} archivesToCheck list of archive paths
  * 
  * @returns {Mod[]}
  */
@@ -82,7 +83,15 @@ const gatherModDataFromArchives = (archivesToCheck, withAutomatFiles = false) =>
         }
 
         try {
-            mod.files = _listFilesOfArchive(archive.path, withAutomatFiles)
+            if (!archive.path || archive.error) {
+                throw new Error('Could not get files of mod: ' + archive.error)
+            }
+
+            if (archive.isArchive) {
+                mod.files = _listFilesOfArchive(archive.path, withAutomatFiles)
+            } else {
+                mod.files = fs.readdirSync(archive.path)
+            }
         } catch (error) {
             mod.error = error
         }

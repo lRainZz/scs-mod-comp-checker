@@ -8,10 +8,11 @@ interface Arguments {
     manualSteamDir?:         string
 }
 
-interface ModArchive {
-    modName: string
-    path:    string
-    error:   any
+interface ModContainer {
+    modName:    string
+    path?:      string
+    isArchive?: boolean
+    error:      any
 }
 
 interface Mod {
@@ -61,4 +62,9 @@ interface SteamLocations {
 interface SteamLibrary {
     path: string
     apps: string[]
+}
+
+interface WorkshopMod {
+    path:      string
+    isArchive: boolean
 }

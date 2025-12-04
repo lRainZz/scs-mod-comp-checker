@@ -2,76 +2,79 @@ const path = require('path')
 const fs = require('fs')
 const { execute7zip } = require('./lib/seven-zip/index.js')
 const TEMP_DATA_DIR = require('./lib/temp-dir.js')
+const { version } = require('os')
 
 /**
  * @param {string} workshopDirectory
  * @param {string} gameVersion
  * 
- * @returns {ModArchive[]}
+ * @returns {ModContainer[]}
  */
 const getListOfWorkshopArchives = (workshopDirectory, gameVersion) => {
     const modDirectories = fs.readdirSync(workshopDirectory)
     .map(modPath => path.join(workshopDirectory, modPath))
     .filter(modPath => fs.lstatSync(modPath).isDirectory())
 
-    const workshopMods = modDirectories.map(dir =>_extractModData(dir, gameVersion))
+    // TODO, check errors, example "1236032431" could not be analyzed but is a folder mod
+    // TODO, filter op level files again -> move filter to analysis?
+    console.log('workshop mods', modDirectories.map(dir =>_extractModData(dir, gameVersion)))
 
-    // console.log('workshop mods', workshopMods)
-
-    return [] 
+    return modDirectories.map(dir =>_extractModData(dir, gameVersion))
 }
 
 /**
  * @param {string} workshopModDirectory
  * @param {string} gameVersion
  * 
- * @returns {ModArchive} for the given mod dir
+ * @returns {ModContainer} for the given mod dir
  */
 const _extractModData = (workshopModDirectory, gameVersion) => {
     const directoryFiles = fs.readdirSync(workshopModDirectory)
 
-    const onlyOneArchive = directoryFiles
-    .filter(filePath => filePath.includes('.zip') || filePath.includes('.scs'))
-    .length === 1
+    // workshop mods can either be archvies OR just straight up folders
+    // if there is only one container (folder or archive) besides
+    // the versions.sii, then we can safely use that
+    const containersInModDir = directoryFiles
+    .filter(filePath => !filePath.includes('versions.sii'))
 
-    // use the workshop folder name (workshop mod id) as fallback
-    const modNameFallback = path.basename(workshopModDirectory)
-
-    /** @type {ModArchive} */
-    const result = {
-        path:    workshopModDirectory,
-        modName: modNameFallback,
-        error:   null
-    }
+    /** @type {string | undefined} */
+    let pathToContainerToUse = undefined
+    /** @type {string | undefined} */
+    let modName = undefined
+    /** @type {any} */
+    let modError = null
+    let modIsArchive = true
 
     try {
-        /** @type {string | undefined} */
-        let archiveToUse
-
-        if (onlyOneArchive) {
-            // if there is only one archive present in the directory
+        if (containersInModDir.length === 1) {
+            // if there is only one container present in the directory
             // wen can safely assume, that this is the actual mod
-            archiveToUse = directoryFiles.find(filePath => filePath.includes('.zip'))
-            || directoryFiles.find(filePath => filePath.includes('.scs'))
-
-            // TODO:
-            // using game version
-            // console.log('analyzing', _getArchiveToAnalyzeFromVersionsSii(workshopModDirectory))
+            pathToContainerToUse = path.join(workshopModDirectory, containersInModDir[0])
         } else {
-            // else we need to analyse the versions.sii to get 
-            // the correct archive
-            // TODO:
+            // else we need to analyse the versions.sii to get the correct archive
+            pathToContainerToUse = _getArchiveToAnalyzeFromVersionsSii(workshopModDirectory, gameVersion)
         }
 
-        if (!archiveToUse) throw 'Could not determine archive name of workshop mod'
+        if (!pathToContainerToUse) throw 'Could not determine archive name of workshop mod'
 
-        result.modName = _getModNameFromManifest(path.join(workshopModDirectory, archiveToUse))
+        modIsArchive = pathToContainerToUse?.endsWith('.scs') || pathToContainerToUse?.endsWith('.zip')
+
+        modName = _getModNameFromManifest(pathToContainerToUse, modIsArchive)
     } catch (error) {
-        result.error = error
+        modError = error
 
         if (error instanceof Error) {
-            result.error = error?.message
+            modError = error?.message
         }
+    }
+
+    /** @type {ModContainer} */
+    const result = {
+        path:      pathToContainerToUse,
+        // use the workshop folder name (workshop mod id) as fallback
+        modName:   modName || path.basename(workshopModDirectory),
+        isArchive: modIsArchive,
+        error:     modError
     }
 
     return result
@@ -83,21 +86,29 @@ const _extractModData = (workshopModDirectory, gameVersion) => {
  * 
  * @returns {string}
  */
-const _getModNameFromManifest = (modPath) => {
+const _getModNameFromManifest = (modPath, isArchive = true) => {
     const MANIFEST_FILE = 'manifest.sii'
 
-    execute7zip([
-        'x',
-        modPath,
-        // mod name is defined in the root dir file manifest.sii
-        MANIFEST_FILE,
-        `-o${TEMP_DATA_DIR}`,
-        // force overwrite of previous extracted file
-        '-y'
-    ])
+    let manifestToAnalyze
 
-    const extractedFilePath = path.join(TEMP_DATA_DIR, MANIFEST_FILE)
-    const manifestContent = fs.readFileSync(extractedFilePath, { encoding: 'utf-8' })
+    // if the mod is an archive, we need to extract the manifest.sii first
+    if (isArchive) {
+        execute7zip([
+            'x',
+            modPath,
+            // mod name is defined in the root dir file manifest.sii
+            MANIFEST_FILE,
+            `-o${TEMP_DATA_DIR}`,
+            // force overwrite of previous extracted file
+            '-y'
+        ])
+
+        manifestToAnalyze = path.join(TEMP_DATA_DIR, MANIFEST_FILE)
+    } else {
+        manifestToAnalyze = path.join(modPath, MANIFEST_FILE)
+    }
+
+    const manifestContent = fs.readFileSync(manifestToAnalyze, { encoding: 'utf-8' })
 
     const displayNameLine = manifestContent.split('\n').find(line => line.includes('display_name:'))
     const displayNameRegex = /display_name:\s*"([^"]+)"/
@@ -116,18 +127,50 @@ const _getModNameFromManifest = (modPath) => {
  * string comparisons and simple keyword analysis
  * 
  * @param {string} modPath path to the mod folder
+ * @param {string} gameVersion version string for looking up the correct archive
  * 
+ * @returns {string} path of mod container
 */
-// * @returns {string} name of the archive to use (without extension!)
-const _getArchiveToAnalyzeFromVersionsSii = (modPath) => {
+const _getArchiveToAnalyzeFromVersionsSii = (modPath, gameVersion) => {
     const VERSIONS_FILE = 'versions.sii'
 
     const versionsFileContent = fs.readFileSync(path.join(modPath, VERSIONS_FILE), { encoding: 'utf-8' })
     const packageVersionBlocks = _parseVersionSii(versionsFileContent)
 
-    // if there is a universal block, we use that
+    const correctVersionBlock = packageVersionBlocks.find(versionBlock =>
+        // try to find the block that contains a compatible version
+        // for the current game version
+        versionBlock.compatibleVersions.find(version => {
+            // the versions from the compatibleVersions look like this:
+            // "1.34.*" - "1.33.*" - "1.32.*"
+            // if we cut away the star at the end, we can simply check if
+            // the string is part of the current game version (alternatively we could
+            // build the following regex to check against: "1\.34\..*")
+            const versionToCheck = version.slice(0, -1)
+            return gameVersion.includes(versionToCheck)
+        })
+    )
 
-    return packageVersionBlocks
+    let archiveName
+
+    if (correctVersionBlock) {
+        archiveName = correctVersionBlock.packageName
+    } else {
+        // try to get the universal version block
+        archiveName = packageVersionBlocks.find(versionBlock => versionBlock.universal === true)?.packageName
+    }
+
+    if (!archiveName) {
+        throw new Error(`\nCould not determine archive of "${modPath}" to use for the current game version (also no universal archive)`)
+    }
+
+    const container = fs.readdirSync(modPath).find(path => path.includes(archiveName))
+
+    if (!container) {
+        throw new Error(`\nCould not find container (archive or folder) in "${modPath}`)
+    }
+
+    return path.join(modPath, container)
 }
 
 /**

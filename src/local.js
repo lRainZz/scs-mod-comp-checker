@@ -4,9 +4,9 @@ const path = require('path')
 /**
  * @param {string} directory path
  * 
- * @returns {ModArchive[]} list of valid archives
+ * @returns {ModContainer[]} list of valid archives
  */
-const getModArchivesOfLocalModDirectory = (directory) => {
+const getModContainersOfLocalModDirectory = (directory) => {
     const paths = fs.readdirSync(directory)
     // ets only supports archives in scs or zip format
     // no need to check for other formats or directories
@@ -14,16 +14,17 @@ const getModArchivesOfLocalModDirectory = (directory) => {
     .map(archivePath => path.resolve(directory, archivePath))
 
     return paths.map(archivePath => {
-        /** @type {ModArchive} */
+        /** @type {ModContainer} */
         const result = {
-            modName: path.basename(archivePath),
-            path:    archivePath,
-            error:   null
+            modName:   path.basename(archivePath),
+            path:      archivePath,
+            isArchive: true,
+            error:     null
         }
         return result
     })
 }
 
 module.exports = {
-    getModArchivesOfLocalModDirectory
+    getModContainersOfLocalModDirectory
 }

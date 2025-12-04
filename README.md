@@ -66,7 +66,6 @@ This project is licensed under the GPL-3.0 license
 
 # TODO
 - locked mods with scs extractor?
-- choice of game version for workshop mods
-- Tests!
-- UI?
+- Tests
+- UI
 - file search (find specific file with path from error in mods)

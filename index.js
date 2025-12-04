@@ -1,5 +1,5 @@
 const { gatherModDataFromArchives, analyseModsContent } = require('./src/analysis.js')
-const { getModArchivesOfLocalModDirectory } = require('./src/local.js')
+const { getModContainersOfLocalModDirectory } = require('./src/local.js')
 const { PRG_ARGS } = require('./src/lib/args.js')
 const { writeResults } = require('./src/result-files.js')
 const { installSevenZip, uninstallSevenZip } = require('./src/lib/seven-zip/index.js')
@@ -43,15 +43,15 @@ const main = async () => {
         console.info(`\nMod directory: "${modDir}"`)
         console.info(`Workshop directory: "${workshopDir}"`)
 
-        const modArchives = getModArchivesOfLocalModDirectory(modDir)
-        const allArchives = [...modArchives]
+        const modContainers = getModContainersOfLocalModDirectory(modDir)
+        const allContainers = [...modContainers]
 
         if (!excludeWorkshop) {
             const workshopArchives = getListOfWorkshopArchives(workshopDir, gameVersion)
-            allArchives.push(...workshopArchives)
+            allContainers.push(...workshopArchives)
         }
 
-        const modDataFromArchives = gatherModDataFromArchives(allArchives, withAutomatFiles)
+        const modDataFromArchives = gatherModDataFromArchives(allContainers, withAutomatFiles)
         const results = await analyseModsContent(modDataFromArchives)
 
         writeResults(results, showAllConflictingFiles, modNamesOnly)
