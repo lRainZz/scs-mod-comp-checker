@@ -15,9 +15,6 @@ const getListOfWorkshopArchives = (workshopDirectory, gameVersion) => {
     .map(modPath => path.join(workshopDirectory, modPath))
     .filter(modPath => fs.lstatSync(modPath).isDirectory())
 
-    // TODO, check errors, example "1236032431" could not be analyzed but is a folder mod
-    console.log('workshop mods', modDirectories.map(dir =>_extractModData(dir, gameVersion)))
-
     return modDirectories.map(dir =>_extractModData(dir, gameVersion))
 }
 
@@ -115,9 +112,11 @@ const _getModNameFromManifest = (modPath, isArchive = true) => {
 
     const name = displayNameMatch?.at(1)
 
-    if (!name) throw 'Could not determine workshop mod name from manifest'
-
-    return name
+    // there are mods that do not have a display_name in the manifest
+    // for now, this is all we can do
+    // -> but we return anyway insteaf of throwing an error,
+    // because the mod may still be anaylzed successfully
+    return name || 'NO_DISPLAY_NAME'
 }
 
 /**
