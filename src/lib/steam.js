@@ -127,7 +127,6 @@ const _getSteamRoot = () => {
     const match = output.match(/SteamPath\s+REG_SZ\s+(.+)/);
     const directoryPath = match ? match[1].trim().replace(/\\\\/g, "\\") : null
 
-    // TODO move to a higher level
     if (!directoryPath) {
         console.error('\nCould not determine Steam workshop directory, please use "--steam-dir="path/to/your/steam/dir/with/ets/or/ats" to supply it manually')
         console.error('Or exlude the Steam workshop analysis by using "-e, --exclude-workshop-mods"')

@@ -5,7 +5,8 @@ const { execFileSync } = require('child_process')
 
 const SEVEN_ZIP_EXTERNAL_PATH = path.join(TEMP_DATA_DIR, '7za.exe')
 
-const installSevenZip   = () => fs.copyFileSync(path.join(__dirname, '7za.exe'), SEVEN_ZIP_EXTERNAL_PATH)
+// extract 7za but do not overwrite it if it exists to comply with the 7za lesser GPL!
+const installSevenZip   = () => fs.copyFileSync(path.join(__dirname, '7za.exe'), SEVEN_ZIP_EXTERNAL_PATH, fs.constants.COPYFILE_EXCL)
 const uninstallSevenZip = () => fs.rmSync(SEVEN_ZIP_EXTERNAL_PATH)
 
 /**
