@@ -9,16 +9,18 @@ interface Arguments {
 }
 
 interface ModContainer {
-    modName:    string
-    path?:      string
-    isArchive?: boolean
-    error:      any
+    modName?:    string
+    path?:       string
+    workshopId?: string
+    isArchive?:  boolean
+    error:       any
 }
 
 interface Mod {
-    modName: string
-    files:   string[]
-    error:   any
+    modName?:    string
+    workshopId?: string
+    files:       string[]
+    error:       any
 }
 
 interface ModContent {

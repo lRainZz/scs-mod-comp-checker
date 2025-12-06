@@ -6,7 +6,7 @@ const { execute7zip } = require('./lib/seven-zip/index.js')
  * 
  * @returns {string[]} list of files in archive
  */
-const _listFilesOfArchive = (pathToArchive, withAutomatFiles = false) => {
+const _listFilesOfArchive = (pathToArchive) => {
     let output = ''
 
     try {
@@ -53,12 +53,7 @@ const _listFilesOfArchive = (pathToArchive, withAutomatFiles = false) => {
         }
 
         // only get files not directories
-        // filePath.includes('/') || filePath.includes('\\')) -> only get files beyond the first level
-        // since the root dir only contains meta data that is not mounted into the games directories
-        if (!attributes.includes('D')
-            && (filePath.includes('/') || filePath.includes('\\'))
-            && (withAutomatFiles || !filePath.startsWith('automat'))
-        ) {
+        if (!attributes.includes('D')) {
             pathList.push(filePath)
         }
     })
@@ -77,9 +72,10 @@ const gatherModDataFromArchives = (archivesToCheck, withAutomatFiles = false) =>
     for (const archive of archivesToCheck) {
         /** @type {Mod} */
         const mod = {
-            modName: archive.modName,
-            files:   [],
-            error:   null
+            modName:    archive.modName,
+            workshopId: archive.workshopId,
+            files:      [],
+            error:      null
         }
 
         try {
@@ -88,10 +84,20 @@ const gatherModDataFromArchives = (archivesToCheck, withAutomatFiles = false) =>
             }
 
             if (archive.isArchive) {
-                mod.files = _listFilesOfArchive(archive.path, withAutomatFiles)
+                mod.files = _listFilesOfArchive(archive.path)
             } else {
                 mod.files = fs.readdirSync(archive.path)
             }
+
+            mod.files = mod.files.filter(filePath => {
+                // filePath.includes('/') || filePath.includes('\\')) -> only get files beyond the first level
+                // since the root dir only contains meta data that is not mounted into the games directories
+                const topLevelCheck = filePath.includes('/') || filePath.includes('\\')
+                // filter automat files if option is enabled
+                const automatCheck = withAutomatFiles || !filePath.startsWith('automat')
+
+                return topLevelCheck && automatCheck
+            })
         } catch (error) {
             mod.error = error
         }
@@ -130,6 +136,12 @@ const analyseModsContent = async (mods) => {
             // if its in other mods, check if its already in the duplicates
             const fileInDuplicates = duplicates.find(dup => dup.filePath === filePath)
 
+            let modName = mod.modName
+
+            if (mod.workshopId) {
+                modName += ' [WORKSHOP MOD - ' + mod.workshopId + ']'
+            }
+
             // if not, create the first duplicate entry
             if (!fileInDuplicates) {
                 /** @type {Duplicate} */
@@ -138,13 +150,13 @@ const analyseModsContent = async (mods) => {
                     mods: []
                 }
 
-                newEntry.mods.push(mod.modName)
+                newEntry.mods.push(modName || '-')
                 duplicates.push(newEntry)
                 return
             }
 
             // else add the mod name to the conflicted mods
-            fileInDuplicates.mods.push(mod.modName)
+            fileInDuplicates.mods.push(modName || '-')
         })
     })
 

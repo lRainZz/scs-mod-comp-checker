@@ -6,7 +6,7 @@ const path = require('path')
  */
 const writeResults = (result, showAllConflictingFiles = false, modNamesOnly = false) => {
     const errorString = result.errors.length > 0
-        ? 'Could not open/analyze the following mod archives:\n  - "' + result.errors.map(mod => mod.modName).join('"\n  - "') + '"'
+        ? 'Could not open/analyze the following mod archives:\n  - "' + result.errors.map(mod => mod.modName || mod.workshopId).join('"\n  - "') + '"'
         : ''
 
     if (result.duplicates.length === 0) {

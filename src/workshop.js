@@ -16,7 +16,6 @@ const getListOfWorkshopArchives = (workshopDirectory, gameVersion) => {
     .filter(modPath => fs.lstatSync(modPath).isDirectory())
 
     // TODO, check errors, example "1236032431" could not be analyzed but is a folder mod
-    // TODO, filter op level files again -> move filter to analysis?
     console.log('workshop mods', modDirectories.map(dir =>_extractModData(dir, gameVersion)))
 
     return modDirectories.map(dir =>_extractModData(dir, gameVersion))
@@ -70,11 +69,11 @@ const _extractModData = (workshopModDirectory, gameVersion) => {
 
     /** @type {ModContainer} */
     const result = {
-        path:      pathToContainerToUse,
-        // use the workshop folder name (workshop mod id) as fallback
-        modName:   modName || path.basename(workshopModDirectory),
-        isArchive: modIsArchive,
-        error:     modError
+        path:       pathToContainerToUse,
+        modName:    modName,
+        workshopId: path.basename(workshopModDirectory),
+        isArchive:  modIsArchive,
+        error:      modError
     }
 
     return result
