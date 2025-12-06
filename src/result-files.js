@@ -94,7 +94,7 @@ const writeResults = (result, showAllConflictingFiles = false, modNamesOnly = fa
 
     const resultFilePath = path.resolve(process.cwd(), 'mod-analysis-result.txt')
     fs.writeFileSync(resultFilePath, outputContent)
-    console.info('\nSuccessfully written result to "' + resultFilePath + '"')
+    console.info(`\nSuccessfully written result to\n    "${resultFilePath}"`)
 }
 
 /**

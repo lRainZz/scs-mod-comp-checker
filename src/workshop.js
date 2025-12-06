@@ -51,7 +51,7 @@ const _extractModData = (workshopModDirectory, gameVersion) => {
             pathToContainerToUse = _getArchiveToAnalyzeFromVersionsSii(workshopModDirectory, gameVersion)
         }
 
-        if (!pathToContainerToUse) throw 'Could not determine archive name of workshop mod'
+        if (!pathToContainerToUse) throw new Error('Could not determine archive name of workshop mod')
 
         modIsArchive = pathToContainerToUse?.endsWith('.scs') || pathToContainerToUse?.endsWith('.zip')
 

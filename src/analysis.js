@@ -119,7 +119,19 @@ const analyseModsContent = async (mods) => {
     /** @type {Mod[]} */
     const modsWithErrors = []
 
-    mods.forEach(mod => {
+    const total = mods.length
+    const stepSize = Math.ceil(total / 10)
+
+    mods.forEach((mod, idx) => {
+        // progress bar
+        if (idx % stepSize === 0) {
+            const percent  = Math.min(Math.round((idx / total) * 100), 100)
+            const barCount = Math.floor(percent / 10);
+            const bar      = "[" + "⛟".repeat(barCount) + " ".repeat(10 - barCount) + "]"
+
+            process.stdout.write(`\r${bar} ${percent}%`)
+        }
+
         if (mod.error) {
             return modsWithErrors.push(mod)
         }
@@ -159,6 +171,9 @@ const analyseModsContent = async (mods) => {
             fileInDuplicates.mods.push(modName || '-')
         })
     })
+
+    // "save" progress bar when finished
+    process.stdout.write(`\r[▇▇▇▇▇▇▇▇▇▇] 100%\n`)
 
     return { duplicates, errors: modsWithErrors }
 }

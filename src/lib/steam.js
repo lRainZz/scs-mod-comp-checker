@@ -105,7 +105,7 @@ const getGameVersion = (appId, gameDir) => {
         // - "1.57.2.4 (a7624b40b34b6135e6ed1cd5b813b17346746798)"
         .toString().trim().split(' ').at(0)
 
-        if (!version) throw 'version-not-detected'
+        if (!version) throw new Error('version-not-detected')
 
         return version
     } catch (error) {
