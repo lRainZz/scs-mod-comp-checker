@@ -6,12 +6,12 @@ const path = require('path')
  */
 const writeResults = (result, showAllConflictingFiles = false, modNamesOnly = false) => {
     const errorString = result.errors.length > 0
-        ? 'Could not open/analyze the following mod archives:\n  - "' + result.errors.join('"\n  - "') + '"'
+        ? 'Could not open/analyze the following mod archives:\n  - "' + result.errors.map(mod => mod.modName || mod.workshopId).join('"\n  - "') + '"'
         : ''
 
     if (result.duplicates.length === 0) {
-        if (errorString) console.log(errorString)
-        console.log('No duplicates found')
+        if (errorString) console.error(errorString)
+        console.error('\nNo duplicates found')
         process.exit(0)
     }
     const transformedResult = _buildResultPrintStructure(result.duplicates)
@@ -94,7 +94,7 @@ const writeResults = (result, showAllConflictingFiles = false, modNamesOnly = fa
 
     const resultFilePath = path.resolve(process.cwd(), 'mod-analysis-result.txt')
     fs.writeFileSync(resultFilePath, outputContent)
-    console.log('Successfully written result to "' + resultFilePath + '"')
+    console.info(`\nSuccessfully written result to\n    "${resultFilePath}"`)
 }
 
 /**
@@ -106,10 +106,11 @@ const _buildResultPrintStructure = (resultDuplicates) => {
     /** @type {ResultStructure[]} */
     const resultPrintStructure = []
 
+    /** @type {string[]} */
     const conflictedMods = resultDuplicates.reduce((out, currentValue) => {
         out.push(...currentValue.mods)
         return out
-    }, [])
+    }, /** @type {string[]} */ ([]))
     .filter((value, index, array) => array.indexOf(value) === index)
 
     conflictedMods.forEach(modName => {
@@ -137,6 +138,7 @@ const _buildConflictsForMod = (modName, resultDuplicates) => {
     // create a copy of the original so we can alter
     // the mods sesction freely without disturbing
     // following iteration
+    /** @type {Duplicate[]} */
     const conflicts = JSON.parse(JSON.stringify(resultDuplicates.filter(dup => dup.mods.includes(modName))))
     // filter the current modName from the conflicted mods
     conflicts.forEach(dup => dup.mods.splice(dup.mods.indexOf(modName), 1))
@@ -155,10 +157,13 @@ const _buildConflictsForMod = (modName, resultDuplicates) => {
     //     { modName: 'mod1', files: ['file1'] },
     //     { modName: 'mod2', files: ['file1', 'file2'] }
     // ]
+    /**
+     * @type {Record<string, string[]>}
+     */
     const result = {}
 
     conflicts.forEach(({ filePath, mods }) => {
-        mods.forEach(mod => {
+        mods.forEach(/** @type { string} */ mod => {
             if (!result[mod]) {
                 result[mod] = []
             }
@@ -179,7 +184,7 @@ const _buildConflictsForMod = (modName, resultDuplicates) => {
 
 const _getFinePrint = () => {
     let result = '\n\nThis analysis was brought to you by lRainZz - https://steamcommunity.com/id/rainzzonsteam/'
-    result += '\nIf you found this helpful, please consider a donation via PayPal - http://paypal.me/rainzz'
+    result += '\nIf you found this helpful, consider buying me Coffee - https://ko-fi.com/lrainzz'
     result += '\n\nIf you have questions, issues or ideas, consider contributing via GitHub - https://github.com/lRainZz/scs-mod-comp-checker'
 
     return result

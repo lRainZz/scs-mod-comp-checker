@@ -672,3 +672,10 @@ may consider it more useful to permit linking proprietary applications with
 the library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.  But first, please read
 <https://www.gnu.org/licenses/why-not-lgpl.html>.
+
+---------------------------------------------------
+
+This application also contains the unmodified 7za.exe binary from the 
+7-Zip project, which is licensed under the LGPL 2.1+ and is not covered 
+by the GPL-3 license of this application. See NOTICE and LICENSE.LGPL 
+for details.

@@ -1,5 +1,5 @@
 # SCS Mod Compatibility Checker - SMCC
-This programm is intended for checking if any of the installed mods in an ETS2/ATS mod directory are conflicting themselves in any way. It basically compares the file lists of any .zip and .scs archives inside a given folder. Besides the "mod" wording, this could also be used to check any list of archives for duplicate files.
+This programm is intended for checking if any of the installed mods in an ETS2/ATS mod directory are conflicting themselves in any way. It compares the contents of the local mod folder as well as the workshop contents of either ETS2 or ATS, depending on the settings.
 
 ## How To
 ### Download
@@ -22,9 +22,10 @@ And compare the resulting hash to the one listed in the GitHub release.
 > ONLY EXECUTE SMCC IF THE HASH IS VALID! ELSE YOU ARE RISKING INFECTION OF YOUR PC!
 
 ### Execution
-To use SMCC either paste it directly to your mod folder and execute it by double-clicking or paste it anywhere you want and provide the path to your mod folder via cmd line:
+To use SMCC either paste it anywhere you like and execute it by double-clicking or call it via the cmd line to supply extra parameters for fine tuning. SMCC will pick up your installation locations and local mod directory automatically!
 
-`smcc.exe "C:\path\to\your\mod\folder"`
+> By default the ETS2 mods are analyzed, if you want to execute it for ATS, call it via the cmd with the `--ats` argument  
+> `$ smcc.exe --ats`
 
 In both cases this will result in a `mod-analysis-result.txt` located where SMCC was started from. This file contains the gathered information in a human readable format.
 
@@ -34,9 +35,6 @@ By default, SMCC will ignore any 'automat/' files and print out
 up to 3 conflicting files per mod, as well as tell you how many
 more files are conflicted. To fine tune your result, you can use
 the following cmd line flags.
-
-All flags must come after the the path to the mod folder if provided!
-'smcc.exe [path-to-mod-directory] [flags]'
 
     -h, --help
         Print the cmd line help
@@ -52,7 +50,23 @@ All flags must come after the the path to the mod folder if provided!
 
     -m, --mod-names-only
         EXCLUDES ALL files that are conflicted from the result
+
+    -e, --exclude-workshop-mods
+        Excludes the workshop files from the analysis
+
+    --ats
+        Analyse the workshop contens of ATS instead of ETS2
+
+    --mod-dir
+        Analyse a different mod folder than the one under <USERPROFILE>/Documents/<ETS2_or_ATS>/mod
 ```
 
 ## License
 This project is licensed under the GPL-3.0 license
+
+# TODO
+- switch from sync file ops to async and handle process termination correctly!
+- locked mods with scs extractor?
+- Tests
+- UI
+- file search (find specific file with path from error in mods)

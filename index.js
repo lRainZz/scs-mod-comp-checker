@@ -1,25 +1,76 @@
-const { gatherArchiveData, analyseArchives, getArchivePathsOfDirectory } = require('./src/archive.js')
-const { getArgs } = require('./src/args.js')
+const { gatherModDataFromArchives, analyseModsContent } = require('./src/analysis.js')
+const { getModContainersOfLocalModDirectory } = require('./src/local.js')
+const { PRG_ARGS } = require('./src/lib/args.js')
 const { writeResults } = require('./src/result-files.js')
+const { installSevenZip, uninstallSevenZip } = require('./src/lib/seven-zip/index.js')
+const { getListOfWorkshopArchives } = require('./src/workshop.js')
+const { findSteamGameInstall, getGameVersion } = require('./src/lib/steam.js')
+
+const setup = () => installSevenZip()
+const cleanup = () => uninstallSevenZip()
+
+// register cleanup for any kind of shutdown
+process.on('exit', cleanup)
+process.on('SIGINT', () => {
+    cleanup()
+    process.exit()
+})
+process.on('SIGTERM', () => {
+    cleanup()
+    process.exit()
+})
 
 const main = async () => {
     try {
         const {
-            modDir,
+            customModDir,
             withAutomatFiles,
             showAllConflictingFiles,
-            modNamesOnly
-        } = getArgs()
+            modNamesOnly,
+            excludeWorkshop,
+            appId
+        } = PRG_ARGS
 
-        const modArchives = getArchivePathsOfDirectory(modDir)
-        const archiveData = await gatherArchiveData(modArchives)
-        const results     = await analyseArchives(archiveData)
+        const {
+            name,
+            gameDir,
+            modDir,
+            workshopDir
+        } = findSteamGameInstall(appId, customModDir)
 
-        writeResults(results, showAllConflictingFiles, modNamesOnly, withAutomatFiles)
+        const gameVersion = getGameVersion(appId, gameDir)
+        console.info(`Analysing "${name}" - v ${gameVersion}`)
+        console.info(`\nMod directory: "${modDir}"`)
+        console.info(`Workshop directory: "${workshopDir}"`)
+
+        console.info('\nAnalyzing your mods...')
+        console.info('\nWARNING: This can take between seconds and a few minutes, depending on the number of mods and the available hardware.')
+        console.info('\nIf you haven\'t started SMCC via the cmd line, this window will close itself, when the analysis has completed!')
+        console.info('\nAborting the process or closing the window manually may result in artifacts under\n    "%USERPROFILE%/AppData/Local/smcc"')
+
+        console.info('\n... gathering local mods ...')
+        const modContainers = getModContainersOfLocalModDirectory(modDir)
+        const allContainers = [...modContainers]
+
+        if (!excludeWorkshop) {
+            console.info('\n... gathering workshop mods ...')
+            const workshopArchives = getListOfWorkshopArchives(workshopDir, gameVersion)
+            allContainers.push(...workshopArchives)
+        }
+
+        console.info('\n... gathering mod data ...')
+        const modDataFromArchives = gatherModDataFromArchives(allContainers, withAutomatFiles)
+
+        console.info('\n... analyzing mod data ...')
+        const results = await analyseModsContent(modDataFromArchives)
+
+        console.info('\n... writing results ...')
+        writeResults(results, showAllConflictingFiles, modNamesOnly)
     } catch (error) {
         console.error('Unexpected error', error)
         process.exit(1)
     }
 }
 
+setup()
 main()

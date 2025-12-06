@@ -1,33 +1,36 @@
 interface Arguments {
-    modDir:                  string
     withAutomatFiles:        boolean
     showAllConflictingFiles: boolean
     modNamesOnly:            boolean
+    excludeWorkshop:         boolean
+    appId:                   string
+    customModDir?:           string
+    manualSteamDir?:         string
 }
 
-interface Archive {
-    archiveName: string
+interface ModContainer {
+    modName?:    string
+    path?:       string
+    workshopId?: string
+    isArchive?:  boolean
+    error:       any
+}
+
+interface Mod {
+    modName?:    string
+    workshopId?: string
     files:       string[]
+    error:       any
 }
 
-interface ArchiveError {
-    archiveName: string
-    errors:      string[]
-}
-
-interface ArchiveContent {
+interface ModContent {
     pathList: string[]
     errors:   string[]
 }
 
-interface ArchivesData {
-    archives:      Archive[]
-    archiveErrors: ArchiveError[]
-}
-
 interface AnalysisResult {
     duplicates: Duplicate[]
-    errors:     string[]
+    errors:     Mod[]
 }
 
 interface Duplicate {
@@ -43,4 +46,27 @@ interface ResultStructure {
 interface Conflict {
     modName: string
     files:   string[]
+}
+
+interface PackageVersionBlock {
+    universal:          boolean
+    packageName:        string
+    compatibleVersions: string[]
+}
+
+interface SteamLocations {
+    name:        string
+    gameDir:     string
+    modDir?:     string
+    workshopDir: string
+}
+
+interface SteamLibrary {
+    path: string
+    apps: string[]
+}
+
+interface WorkshopMod {
+    path:      string
+    isArchive: boolean
 }
