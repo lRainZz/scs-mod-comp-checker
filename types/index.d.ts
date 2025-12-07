@@ -54,6 +54,10 @@ interface PackageVersionBlock {
     compatibleVersions: string[]
 }
 
+interface VdfObject {
+    [key: string]: string | VdfObject
+}
+
 interface SteamLocations {
     name:        string
     gameDir:     string

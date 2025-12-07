@@ -1,10 +1,7 @@
 const fs = require('fs')
 const path = require('path')
 
-/**
- * @param {AnalysisResult} result
- */
-const writeResults = (result, showAllConflictingFiles = false, modNamesOnly = false) => {
+const writeResults = (result: AnalysisResult, showAllConflictingFiles = false, modNamesOnly = false) => {
     const errorString = result.errors.length > 0
         ? 'Could not open/analyze the following mod archives:\n  - "' + result.errors.map(mod => mod.modName || mod.workshopId).join('"\n  - "') + '"'
         : ''
@@ -97,25 +94,17 @@ const writeResults = (result, showAllConflictingFiles = false, modNamesOnly = fa
     console.info(`\nSuccessfully written result to\n    "${resultFilePath}"`)
 }
 
-/**
- * @param {Duplicate[]} resultDuplicates
- * 
- * @returns {ResultStructure[]}
- */
-const _buildResultPrintStructure = (resultDuplicates) => {
-    /** @type {ResultStructure[]} */
-    const resultPrintStructure = []
+const _buildResultPrintStructure = (resultDuplicates: Duplicate[]): ResultStructure[] => {
+    const resultPrintStructure: ResultStructure[] = []
 
-    /** @type {string[]} */
-    const conflictedMods = resultDuplicates.reduce((out, currentValue) => {
+    const conflictedMods: string[] = resultDuplicates.reduce<string[]>((out, currentValue) => {
         out.push(...currentValue.mods)
         return out
-    }, /** @type {string[]} */ ([]))
+    }, [])
     .filter((value, index, array) => array.indexOf(value) === index)
 
     conflictedMods.forEach(modName => {
-        /** @type {ResultStructure} */
-        const resultStruc = {
+        const resultStruc: ResultStructure = {
             mod: modName,
             conflicts: _buildConflictsForMod(modName, resultDuplicates)
         }
@@ -126,20 +115,12 @@ const _buildResultPrintStructure = (resultDuplicates) => {
     return resultPrintStructure
 }
 
-/**
- * 
- * @param {string} modName 
- * @param {Duplicate[]} resultDuplicates 
- * 
- * @returns {Conflict[]}
- */
-const _buildConflictsForMod = (modName, resultDuplicates) => {
+const _buildConflictsForMod = (modName: string, resultDuplicates: Duplicate[]): Conflict[] => {
     // find all files that are affected and part of the mod
     // create a copy of the original so we can alter
     // the mods sesction freely without disturbing
     // following iteration
-    /** @type {Duplicate[]} */
-    const conflicts = JSON.parse(JSON.stringify(resultDuplicates.filter(dup => dup.mods.includes(modName))))
+    const conflicts: Duplicate[] = JSON.parse(JSON.stringify(resultDuplicates.filter(dup => dup.mods.includes(modName))))
     // filter the current modName from the conflicted mods
     conflicts.forEach(dup => dup.mods.splice(dup.mods.indexOf(modName), 1))
 
@@ -157,13 +138,10 @@ const _buildConflictsForMod = (modName, resultDuplicates) => {
     //     { modName: 'mod1', files: ['file1'] },
     //     { modName: 'mod2', files: ['file1', 'file2'] }
     // ]
-    /**
-     * @type {Record<string, string[]>}
-     */
-    const result = {}
+    const result: Record<string, string[]> = {}
 
     conflicts.forEach(({ filePath, mods }) => {
-        mods.forEach(/** @type { string} */ mod => {
+        mods.forEach(mod => {
             if (!result[mod]) {
                 result[mod] = []
             }
@@ -172,8 +150,7 @@ const _buildConflictsForMod = (modName, resultDuplicates) => {
     })
 
     return Object.entries(result).map(([ modName, files ]) => {
-        /** @type {Conflict} */
-        const conflict = {
+        const conflict: Conflict = {
             modName,
             files
         }

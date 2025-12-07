@@ -1,16 +1,9 @@
 const { execSync } = require('child_process')
 const fs = require('fs')
 const path = require('path')
-const { ETS_APP_ID } = require('./args.js')
+const { ETS_APP_ID } = require('./args')
 
-/**
- * 
- * @param {string} appId
- * @param {string} [customModDir]
- * 
- * @returns {SteamLocations} path to installation of requested appId
- */
-const findSteamGameInstall = (appId, customModDir = undefined) => {
+const findSteamGameInstall = (appId: string, customModDir: string | undefined = undefined): SteamLocations => {
     // the libraryfolders.vdf contains iformation which steam libs exist,
     // where they are located and wihch games they contain
     const libraryVdfPath = path.join(STEAM_ROOT, 'steamapps', 'libraryfolders.vdf')
@@ -83,13 +76,7 @@ const findSteamGameInstall = (appId, customModDir = undefined) => {
     return result
 }
 
-/**
- * @param {string }appId
- * @param {string} gameDir
- * 
- * @returns {string} the game version
- */
-const getGameVersion = (appId, gameDir) => {
+const getGameVersion = (appId: string, gameDir: string): string => {
     try {
         const pathToGameExe = path.join(
             gameDir,
@@ -114,18 +101,15 @@ const getGameVersion = (appId, gameDir) => {
     }
 }
 
-/**
- * @returns {string}
- */
-const _getSteamRoot = () => {
-    // try to read the steam install folder from the windows registry
+const _getSteamRoot = (): string => {
+    // try to read the steam install folder = require(the windows registry
     const output = execSync(
         'reg query "HKCU\\Software\\Valve\\Steam" /v SteamPath',
         { encoding: 'utf-8' }
     )
 
     const match = output.match(/SteamPath\s+REG_SZ\s+(.+)/);
-    const directoryPath = match ? match[1].trim().replace(/\\\\/g, "\\") : null
+    const directoryPath = match && match[1] ? match[1].trim().replace(/\\\\/g, "\\") : null
 
     if (!directoryPath) {
         console.error('\nCould not determine Steam workshop directory, please use "--steam-dir="path/to/your/steam/dir/with/ets/or/ats" to supply it manually')
@@ -136,21 +120,14 @@ const _getSteamRoot = () => {
     return directoryPath
 }
 
-/**
- * 
- * @param {string} vdfContent 
- * 
- * @returns {SteamLibrary[]}
- */
-const _parseLibraryFoldersFromVdf = (vdfContent) => {
+const _parseLibraryFoldersFromVdf = (vdfContent: string): SteamLibrary[] => {
     const lines = vdfContent
         .replace(/\r/g, '')
         .split('\n')
         .map(line => line.trim())
         .filter(Boolean)
 
-    /** @type {Array<Record<string, any>>} */
-    const stack = [{}]
+    const stack: VdfObject[] = [{}]
 
     for (const line of lines) {
         if (line === '}') {
@@ -161,13 +138,13 @@ const _parseLibraryFoldersFromVdf = (vdfContent) => {
         const keyVal = line.match(/^"([^"]+)"\s+"([^"]+)"$/)
         if (keyVal) {
             const [, key, val] = keyVal
-            const target = stack.at(-1)
+            const target = stack.at(-1) as VdfObject
 
-            if (!target) {
+            if (!target || !key) {
                 throw new Error(`VDF parse error: encountered object start "${key}" before any parent object existed`)
             }
 
-            target[key] = val
+            target[key] = val!
             continue
         }
 
@@ -176,7 +153,7 @@ const _parseLibraryFoldersFromVdf = (vdfContent) => {
             const key = objStart[1]
             const parent = stack.at(-1)
 
-            if (!parent) {
+            if (!parent || !key) {
                 throw new Error(`VDF parse error: object key "${key}" encountered with no parent object available`)
             }
 
@@ -185,9 +162,12 @@ const _parseLibraryFoldersFromVdf = (vdfContent) => {
         }
     }
 
-    const result = Object.values(stack[0].libraryfolders).map(library => {
-        /** @type {SteamLibrary} */
-        const steamLib = {
+    if (!stack[0]?.libraryfolders) {
+        throw new Error(`VDF parse error: result stack or libraryfolders was undefined`)
+    }
+
+    const result = Object.values(stack[0].libraryfolders).map((library: any) => {
+        const steamLib: SteamLibrary = {
             path: library.path,
             apps: Object.keys(library.apps)
         }
@@ -203,7 +183,7 @@ const STEAM_ROOT = _getSteamRoot()
 findSteamGameInstall('227300')
 
 module.exports = {
-    STEAM_ROOT,
     findSteamGameInstall,
-    getGameVersion
+    getGameVersion, STEAM_ROOT
 }
+

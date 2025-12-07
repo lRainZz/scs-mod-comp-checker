@@ -1,10 +1,10 @@
-const { gatherModDataFromArchives, analyseModsContent } = require('./src/analysis.js')
-const { getModContainersOfLocalModDirectory } = require('./src/local.js')
-const { PRG_ARGS } = require('./src/lib/args.js')
-const { writeResults } = require('./src/result-files.js')
-const { installSevenZip, uninstallSevenZip } = require('./src/lib/seven-zip/index.js')
-const { getListOfWorkshopArchives } = require('./src/workshop.js')
-const { findSteamGameInstall, getGameVersion } = require('./src/lib/steam.js')
+const { analyseModsContent, gatherModDataFromArchives } = require('./src/analysis')
+const { PRG_ARGS } = require('./src/lib/args')
+const { installSevenZip, uninstallSevenZip } = require('./src/lib/seven-zip/index')
+const { findSteamGameInstall, getGameVersion } = require('./src/lib/steam')
+const { getModContainersOfLocalModDirectory } = require('./src/local')
+const { writeResults } = require('./src/result-files')
+const { getListOfWorkshopArchives } = require('./src/workshop')
 
 const setup = () => installSevenZip()
 const cleanup = () => uninstallSevenZip()
@@ -72,5 +72,9 @@ const main = async () => {
     }
 }
 
-setup()
-main()
+try {
+    setup()
+    main()
+} catch (error) {
+    console.error('RTE', error, JSON.stringify(error, null, 4))
+}
