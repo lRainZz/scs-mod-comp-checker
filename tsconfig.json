@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+        "target": "es2020", // node 16, because of pkg
+        "module": "commonjs", // beacuse of pkg
+        "lib": ["ESNext"],
+        "outDir": "dist",
+        "types": ["node"],
+
+        "sourceMap": true,
+        "inlineSources": true,
+
+        "strict": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": false,
+        "noUncheckedIndexedAccess": true,
+        "forceConsistentCasingInFileNames": true,
+
+        "esModuleInterop": true,
+        "resolveJsonModule": true,
+
+        "skipLibCheck": true,
+    },
+    "include": [
+        "types",
+        "src"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
+    ]
+}

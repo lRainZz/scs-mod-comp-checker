@@ -1,12 +1,10 @@
 const fs = require('fs')
+const packageJson = require('../../package.json')
 
 const ETS_APP_ID = '227300'
 const ATS_APP_ID = '270880'
 
-/**
- * @returns {Arguments}
- */
-const getArgs = () => {
+const getArgs = (): Arguments => {
     const args = process.argv
 
     // args with shorthands
@@ -26,7 +24,7 @@ const getArgs = () => {
     }
 
     if (printVersion) {
-        const { version } = require('../../package.json')
+        const { version } = packageJson
         console.info('\nSMCC Version ' + version)
         process.exit(0)
     }
@@ -97,8 +95,7 @@ the following cmd line flags.
 
 const PRG_ARGS = getArgs()
 
-module.exports = {
-    PRG_ARGS,
-    ETS_APP_ID,
-    ATS_APP_ID
+export {
+    ATS_APP_ID, ETS_APP_ID, PRG_ARGS
 }
+

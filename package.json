@@ -1,20 +1,22 @@
 {
     "name": "scs-mod-comp-checker",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "main": "index.js",
     "type": "commonjs",
     "author": "lRainZz",
     "license": "GPL-3.0-only",
     "description": "Checks if zip archives in a given folder contain the same files - intended for checking if installed ETS2/ATS mods have conflicts",
     "scripts": {
+        "check": "tsx index.ts",
         "check:exe": "npm run build && smcc.exe",
-        "check": "node index.js",
-        "build": "pkg --config pkg-config.json index.js -o smcc"
+        "build": "tsup",
+        "build:exe": "npm run build && pkg --config pkg-config.json dist/index.cjs -o smcc"
     },
     "devDependencies": {
-        "pkg": "^5.8.1"
-    },
-    "dependencies": {
-        "yauzl": "^3.2.0"
+        "@types/node": "^24.10.1",
+        "pkg": "^5.8.1",
+        "tsup": "^8.5.1",
+        "tsx": "^4.21.0",
+        "typescript": "^5.9.3"
     }
 }

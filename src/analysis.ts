@@ -1,12 +1,7 @@
 const fs = require('fs')
-const { execute7zip } = require('./lib/seven-zip/index.js')
+const { execute7zip } = require('./lib/seven-zip/index')
 
-/**
- * @param {string} pathToArchive
- * 
- * @returns {string[]} list of files in archive
- */
-const _listFilesOfArchive = (pathToArchive) => {
+const _listFilesOfArchive = (pathToArchive: string): string[] => {
     let output = ''
 
     try {
@@ -28,11 +23,10 @@ const _listFilesOfArchive = (pathToArchive) => {
     // an entry looks like this:
     // date - time - file attributes - size uncompressed - size compressed - path
     // 2025-06-02 19:16:52 ....A      1398256         3082  vehicle/truck/upgrade/paintjob/scania.t/airbrush/accessories/acc_0.dds
-    /** @type {string[]} */
-    const pathList = []
+    const pathList: string[] = []
 
     output.trim().split('\n')
-    .forEach(entry => { 
+    .forEach(entry => {
         // collapse whitespace to single spaces
         entry = entry.trim().replaceAll(/\s+/g, ' ')
 
@@ -53,25 +47,19 @@ const _listFilesOfArchive = (pathToArchive) => {
         }
 
         // only get files not directories
-        if (!attributes.includes('D')) {
-            pathList.push(filePath)
+        if (!attributes?.includes('D')) {
+            pathList.push(filePath || '')
         }
     })
 
-    return pathList
+    return pathList.filter(Boolean)
 }
 
-/**
- * @param {ModContainer[]} archivesToCheck list of archive paths
- * 
- * @returns {Mod[]}
- */
-const gatherModDataFromArchives = (archivesToCheck, withAutomatFiles = false) => {
+const gatherModDataFromArchives = (archivesToCheck: ModContainer[], withAutomatFiles = false): Mod[] => {
     const mods = []
 
     for (const archive of archivesToCheck) {
-        /** @type {Mod} */
-        const mod = {
+        const mod: Mod = {
             modName:    archive.modName,
             workshopId: archive.workshopId,
             files:      [],
@@ -108,16 +96,9 @@ const gatherModDataFromArchives = (archivesToCheck, withAutomatFiles = false) =>
     return mods
 }
 
-/**
- * @param {Mod[]} mods
- * 
- * @returns {Promise<AnalysisResult>}
- */
-const analyseModsContent = async (mods) => {
-    /** @type {Duplicate[]} */
-    const duplicates = []
-    /** @type {Mod[]} */
-    const modsWithErrors = []
+const analyseModsContent = async (mods: Mod[]): Promise<AnalysisResult> => {
+    const duplicates: Duplicate[] = []
+    const modsWithErrors: Mod[] = []
 
     const total = mods.length
     const stepSize = Math.ceil(total / 10)
@@ -156,8 +137,7 @@ const analyseModsContent = async (mods) => {
 
             // if not, create the first duplicate entry
             if (!fileInDuplicates) {
-                /** @type {Duplicate} */
-                const newEntry = {
+                const newEntry: Duplicate = {
                     filePath,
                     mods: []
                 }
