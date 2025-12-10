@@ -53,7 +53,7 @@ const findSteamGameInstall = (appId: string, customModDir: string | undefined = 
 
     let fullPathToModDir = customModDir
 
-    if (!customModDir) {
+    if (!fullPathToModDir) {
         if (!process.env.USERPROFILE) {
             throw new Error('\nCould not access %USERPROFILE%, please provide a custom mod dir via "--mod-dir=<path/to/your/mod/directory>"')
         }
@@ -66,7 +66,7 @@ const findSteamGameInstall = (appId: string, customModDir: string | undefined = 
         )
     }
 
-    const result = {
+    const result: SteamLocations = {
         name:        installDirName,
         gameDir:     fullPathToApp,
         modDir:      fullPathToModDir,
