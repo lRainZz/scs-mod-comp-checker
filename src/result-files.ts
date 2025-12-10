@@ -1,5 +1,5 @@
-const fs = require('fs')
-const path = require('path')
+import fs from 'fs'
+import path from 'path'
 
 const writeResults = (result: AnalysisResult, showAllConflictingFiles = false, modNamesOnly = false) => {
     const errorString = result.errors.length > 0
@@ -167,6 +167,6 @@ const _getFinePrint = () => {
     return result
 }
 
-module.exports = {
+export {
     writeResults
 }

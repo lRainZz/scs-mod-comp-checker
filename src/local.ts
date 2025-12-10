@@ -1,5 +1,5 @@
-const fs = require('fs')
-const path = require('path')
+import fs from 'fs'
+import path from 'path'
 
 const getModContainersOfLocalModDirectory = (directory: string): ModContainer[] => {
     const paths = fs.readdirSync(directory)
@@ -19,6 +19,6 @@ const getModContainersOfLocalModDirectory = (directory: string): ModContainer[] 
     })
 }
 
-module.exports = {
+export {
     getModContainersOfLocalModDirectory
 }

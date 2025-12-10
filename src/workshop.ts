@@ -1,17 +1,24 @@
-const fs = require('fs')
-const path = require('path')
-const { execute7zip } = require('./lib/seven-zip/index')
-const TEMP_DATA_DIR = require('./lib/temp-dir')
+import fs from 'fs'
+import path from 'path'
+import { execute7zip } from './lib/seven-zip/index'
+import TEMP_DATA_DIR from './lib/temp-dir'
 
-const getListOfWorkshopArchives = (workshopDirectory: string, gameVersion: string): ModContainer[] => {
-    const modDirectories = fs.readdirSync(workshopDirectory)
+const getListOfWorkshopArchives = async (workshopDirectory: string, gameVersion: string): Promise<ModContainer[]> => {
+    const modDirectories: string[] = fs.readdirSync(workshopDirectory)
     .map((modPath: string) => path.join(workshopDirectory, modPath))
     .filter((modPath: string) => fs.lstatSync(modPath).isDirectory())
 
-    return modDirectories.map((dir: string) =>_extractModData(dir, gameVersion))
+    const result: ModContainer[] = []
+
+    for (const dir of modDirectories) {
+        const modDataOfDir = await _extractModData(dir, gameVersion)
+        result.push(modDataOfDir)
+    }
+
+    return result
 }
 
-const _extractModData = (workshopModDirectory: string, gameVersion: string): ModContainer => {
+const _extractModData = async (workshopModDirectory: string, gameVersion: string): Promise<ModContainer> => {
     const directoryFiles = fs.readdirSync(workshopModDirectory)
 
     // workshop mods can either be archvies OR just straight up folders
@@ -39,7 +46,7 @@ const _extractModData = (workshopModDirectory: string, gameVersion: string): Mod
 
         modIsArchive = pathToContainerToUse?.endsWith('.scs') || pathToContainerToUse?.endsWith('.zip')
 
-        modName = _getModNameFromManifest(pathToContainerToUse, modIsArchive)
+        modName = await _getModNameFromManifest(pathToContainerToUse, modIsArchive)
     } catch (error) {
         modError = error
 
@@ -59,14 +66,14 @@ const _extractModData = (workshopModDirectory: string, gameVersion: string): Mod
     return result
 }
 
-const _getModNameFromManifest = (modPath: string, isArchive: boolean = true): string => {
+const _getModNameFromManifest = async (modPath: string, isArchive: boolean = true): Promise<string> => {
     const MANIFEST_FILE = 'manifest.sii'
 
     let manifestToAnalyze
 
     // if the mod is an archive, we need to extract the manifest.sii first
     if (isArchive) {
-        execute7zip([
+        await execute7zip([
             'x',
             modPath,
             // mod name is defined in the root dir file manifest.sii
@@ -111,7 +118,7 @@ const _getArchiveToAnalyzeFromVersionsSii = (modPath: string, gameVersion: strin
         // try to find the block that contains a compatible version
         // for the current game version
         versionBlock.compatibleVersions.find(version => {
-            // the versions = require(the compatibleVersions look like this:
+            // the versions from the compatibleVersions look like this:
             // "1.34.*" - "1.33.*" - "1.32.*"
             // if we cut away the star at the end, we can simply check if
             // the string is part of the current game version (alternatively we could
@@ -172,7 +179,6 @@ const _parseVersionSii = (versionSiiContent: string): PackageVersionBlock[] => {
     return packageVersionBlocks
 }
 
-module.exports = {
+export {
     getListOfWorkshopArchives
 }
-

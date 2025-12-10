@@ -1,11 +1,11 @@
-const fs = require('fs')
-const { execute7zip } = require('./lib/seven-zip/index')
+import fs from 'fs'
+import { execute7zip } from './lib/seven-zip/index'
 
-const _listFilesOfArchive = (pathToArchive: string): string[] => {
+const _listFilesOfArchive = async (pathToArchive: string): Promise<string[]> => {
     let output = ''
 
     try {
-        output = execute7zip([
+        output = await execute7zip([
             'l',
             '-ba',
             pathToArchive
@@ -55,7 +55,7 @@ const _listFilesOfArchive = (pathToArchive: string): string[] => {
     return pathList.filter(Boolean)
 }
 
-const gatherModDataFromArchives = (archivesToCheck: ModContainer[], withAutomatFiles = false): Mod[] => {
+const gatherModDataFromArchives = async (archivesToCheck: ModContainer[], withAutomatFiles = false): Promise<Mod[]> => {
     const mods = []
 
     for (const archive of archivesToCheck) {
@@ -72,7 +72,7 @@ const gatherModDataFromArchives = (archivesToCheck: ModContainer[], withAutomatF
             }
 
             if (archive.isArchive) {
-                mod.files = _listFilesOfArchive(archive.path)
+                mod.files = await _listFilesOfArchive(archive.path)
             } else {
                 mod.files = fs.readdirSync(archive.path)
             }
@@ -153,12 +153,12 @@ const analyseModsContent = async (mods: Mod[]): Promise<AnalysisResult> => {
     })
 
     // "save" progress bar when finished
-    process.stdout.write(`\r[▇▇▇▇▇▇▇▇▇▇] 100%\n`)
+    process.stdout.write(`\r[⛟⛟⛟⛟⛟⛟⛟⛟⛟⛟] 100%\n`)
 
     return { duplicates, errors: modsWithErrors }
 }
 
-module.exports = {
+export {
     analyseModsContent,
     gatherModDataFromArchives
 }

@@ -1,7 +1,7 @@
-const { execSync } = require('child_process')
-const fs = require('fs')
-const path = require('path')
-const { ETS_APP_ID } = require('./args')
+import { execSync } from 'child_process'
+import fs from 'fs'
+import path from 'path'
+import { ETS_APP_ID } from './args'
 
 const findSteamGameInstall = (appId: string, customModDir: string | undefined = undefined): SteamLocations => {
     // the libraryfolders.vdf contains iformation which steam libs exist,
@@ -182,7 +182,7 @@ const STEAM_ROOT = _getSteamRoot()
 
 findSteamGameInstall('227300')
 
-module.exports = {
+export {
     findSteamGameInstall,
     getGameVersion, STEAM_ROOT
 }
