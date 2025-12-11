@@ -61,7 +61,7 @@ interface VdfObject {
 interface SteamLocations {
     name:        string
     gameDir:     string
-    modDir?:     string
+    modDir:      string
     workshopDir: string
 }
 

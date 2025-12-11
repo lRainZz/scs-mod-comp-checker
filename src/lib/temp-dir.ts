@@ -1,8 +1,8 @@
-const fs = require('fs')
-const os = require('os')
-const path = require('path')
+import fs from 'fs'
+import os from 'os'
+import path from 'path'
 
-const TEMP_DATA_DIR = path.join(os.homedir(), 'Appdata', 'Local', 'smcc')
+const TEMP_DATA_DIR: string = path.join(os.homedir(), 'Appdata', 'Local', 'smcc')
 fs.mkdirSync(TEMP_DATA_DIR, { recursive: true })
 
-module.exports = TEMP_DATA_DIR
+export default TEMP_DATA_DIR

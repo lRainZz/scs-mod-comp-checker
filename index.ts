@@ -1,10 +1,10 @@
-const { analyseModsContent, gatherModDataFromArchives } = require('./src/analysis')
-const { PRG_ARGS } = require('./src/lib/args')
-const { installSevenZip, uninstallSevenZip } = require('./src/lib/seven-zip/index')
-const { findSteamGameInstall, getGameVersion } = require('./src/lib/steam')
-const { getModContainersOfLocalModDirectory } = require('./src/local')
-const { writeResults } = require('./src/result-files')
-const { getListOfWorkshopArchives } = require('./src/workshop')
+import { analyseModsContent, gatherModDataFromArchives } from './src/analysis'
+import { PRG_ARGS } from './src/lib/args'
+import { installSevenZip, uninstallSevenZip } from './src/lib/seven-zip/index'
+import { findSteamGameInstall, getGameVersion } from './src/lib/steam'
+import { getModContainersOfLocalModDirectory } from './src/local'
+import { writeResults } from './src/result-files'
+import { getListOfWorkshopArchives } from './src/workshop'
 
 const setup = () => installSevenZip()
 const cleanup = () => uninstallSevenZip()
@@ -54,12 +54,12 @@ const main = async () => {
 
         if (!excludeWorkshop) {
             console.info('\n... gathering workshop mods ...')
-            const workshopArchives = getListOfWorkshopArchives(workshopDir, gameVersion)
+            const workshopArchives = await getListOfWorkshopArchives(workshopDir, gameVersion)
             allContainers.push(...workshopArchives)
         }
 
         console.info('\n... gathering mod data ...')
-        const modDataFromArchives = gatherModDataFromArchives(allContainers, withAutomatFiles)
+        const modDataFromArchives = await gatherModDataFromArchives(allContainers, withAutomatFiles)
 
         console.info('\n... analyzing mod data ...')
         const results = await analyseModsContent(modDataFromArchives)

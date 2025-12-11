@@ -1,10 +1,16 @@
 {
   "compilerOptions": {
-        "target": "es2020", // node 16, because of pkg
-        "module": "commonjs", // beacuse of pkg
-        "lib": ["ESNext"],
+        // node 16 - because of pkg, but most of the ES12 features are alreay supported
+        "target": "ES2021",
+        // the array functions of ES13 are also available
+        "lib": ["ES2021", "ES2022.Array"],
+        // beacuse of pkg
+        "module": "commonjs",
         "outDir": "dist",
         "types": ["node"],
+        "moduleResolution": "node",
+
+        "moduleDetection": "force",
 
         "sourceMap": true,
         "inlineSources": true,
@@ -23,8 +29,9 @@
         "skipLibCheck": true,
     },
     "include": [
-        "types",
-        "src"
+        "index.ts",
+        "types/**/*",
+        "src/**/*"
     ],
     "exclude": [
         "node_modules",

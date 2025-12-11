@@ -1,7 +1,7 @@
-const { execSync } = require('child_process')
-const fs = require('fs')
-const path = require('path')
-const { ETS_APP_ID } = require('./args')
+import { execSync } from 'child_process'
+import fs from 'fs'
+import path from 'path'
+import { ETS_APP_ID } from './args'
 
 const findSteamGameInstall = (appId: string, customModDir: string | undefined = undefined): SteamLocations => {
     // the libraryfolders.vdf contains iformation which steam libs exist,
@@ -53,7 +53,7 @@ const findSteamGameInstall = (appId: string, customModDir: string | undefined = 
 
     let fullPathToModDir = customModDir
 
-    if (!customModDir) {
+    if (!fullPathToModDir) {
         if (!process.env.USERPROFILE) {
             throw new Error('\nCould not access %USERPROFILE%, please provide a custom mod dir via "--mod-dir=<path/to/your/mod/directory>"')
         }
@@ -66,7 +66,7 @@ const findSteamGameInstall = (appId: string, customModDir: string | undefined = 
         )
     }
 
-    const result = {
+    const result: SteamLocations = {
         name:        installDirName,
         gameDir:     fullPathToApp,
         modDir:      fullPathToModDir,
@@ -182,7 +182,7 @@ const STEAM_ROOT = _getSteamRoot()
 
 findSteamGameInstall('227300')
 
-module.exports = {
+export {
     findSteamGameInstall,
     getGameVersion, STEAM_ROOT
 }

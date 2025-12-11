@@ -65,8 +65,7 @@ the following cmd line flags.
 This project is licensed under the GPL-3.0 license
 
 # TODO
-- switch from sync file ops to async and handle process termination correctly!
 - locked mods with scs extractor?
 - Tests
-- UI
+- UI - Electron+Vue
 - file search (find specific file with path from error in mods)
