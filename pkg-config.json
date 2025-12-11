@@ -1,8 +1,0 @@
-{
-    "targets": [
-        "node16-win-x64"
-    ],
-    "assets": [
-        "dist/7za.exe"
-    ]
-}

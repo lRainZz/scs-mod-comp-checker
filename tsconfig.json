@@ -1,40 +1,33 @@
 {
-  "compilerOptions": {
-        // node 16 - because of pkg, but most of the ES12 features are alreay supported
-        "target": "ES2021",
-        // the array functions of ES13 are also available
-        "lib": ["ES2021", "ES2022.Array"],
-        // beacuse of pkg
-        "module": "commonjs",
-        "outDir": "dist",
-        "types": ["node"],
-        "moduleResolution": "node",
-
-        "moduleDetection": "force",
-
-        "sourceMap": true,
-        "inlineSources": true,
-
-        "strict": true,
-        "noFallthroughCasesInSwitch": true,
-        "noImplicitOverride": true,
-        "noUnusedLocals": true,
-        "noUnusedParameters": false,
-        "noUncheckedIndexedAccess": true,
-        "forceConsistentCasingInFileNames": true,
-
-        "esModuleInterop": true,
-        "resolveJsonModule": true,
-
+    "compilerOptions": {
+        "target": "ES2020",
+        "useDefineForClassFields": true,
+        "module": "ESNext",
+        "lib": ["ES2020", "DOM", "DOM.Iterable", "ES2021.String"],
         "skipLibCheck": true,
+
+        /* Bundler mode */
+        "moduleResolution": "bundler",
+        "allowImportingTsExtensions": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noEmit": true,
+        "jsx": "preserve",
+
+        /* Linting */
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noFallthroughCasesInSwitch": true
     },
     "include": [
-        "index.ts",
-        "types/**/*",
-        "src/**/*"
+        "src/**/*.ts",
+        "src/**/*.d.ts",
+        "src/**/*.tsx",
+        "src/**/*.vue",
+        "electron"
     ],
-    "exclude": [
-        "node_modules",
-        "dist"
+    "references": [
+        { "path": "./tsconfig.node.json" }
     ]
 }

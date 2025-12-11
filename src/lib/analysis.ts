@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { execute7zip } from './lib/seven-zip/index'
+import { execute7zip } from './standalone/seven-zip/index'
 
 const _listFilesOfArchive = async (pathToArchive: string): Promise<string[]> => {
     let output = ''

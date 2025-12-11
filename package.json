@@ -1,22 +1,25 @@
 {
-    "name": "scs-mod-comp-checker",
-    "version": "2.1.0",
-    "main": "index.js",
-    "type": "commonjs",
-    "author": "lRainZz",
-    "license": "GPL-3.0-only",
-    "description": "Checks if zip archives in a given folder contain the same files - intended for checking if installed ETS2/ATS mods have conflicts",
+    "name": "electron-vite-test",
+    "private": true,
+    "version": "1.0.0",
+    "type": "module",
     "scripts": {
-        "check": "tsx index.ts",
-        "check:exe": "npm run build && smcc.exe",
-        "build": "tsup",
-        "build:exe": "npm run build && pkg --config pkg-config.json dist/index.cjs -o smcc"
+        "dev": "vite",
+        "build": "vue-tsc && vite build && electron-builder",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "vue": "^3.4.21"
     },
     "devDependencies": {
-        "@types/node": "^24.10.1",
-        "pkg": "^5.8.1",
-        "tsup": "^8.5.1",
-        "tsx": "^4.21.0",
-        "typescript": "^5.9.3"
-    }
+        "@vitejs/plugin-vue": "^5.0.4",
+        "typescript": "^5.2.2",
+        "vite": "^5.1.6",
+        "vue-tsc": "^2.0.26",
+        "electron": "^30.0.1",
+        "electron-builder": "^24.13.3",
+        "vite-plugin-electron": "^0.28.6",
+        "vite-plugin-electron-renderer": "^0.14.5"
+    },
+    "main": "dist-electron/main.js"
 }

@@ -1,0 +1,23 @@
+// @see - https://www.electron.build/configuration/configuration
+{
+    "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+    "appId": "smcc",
+    "asar": true,
+    "productName": "SCS Mod Compatibility Checker",
+    "directories": {
+        "output": "release/${version}"
+    },
+    "files": [
+        "dist",
+        "dist-electron"
+    ],
+    "win": {
+        "target": [
+            {
+                "target": "portable",
+                "arch": [ "x64" ]
+            }
+        ],
+        "artifactName": "smcc-v${version}.${ext}"
+    }
+}

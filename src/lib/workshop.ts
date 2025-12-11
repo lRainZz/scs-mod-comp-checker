@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
-import { execute7zip } from './lib/seven-zip/index'
-import TEMP_DATA_DIR from './lib/temp-dir'
+import { execute7zip } from './standalone/seven-zip/index'
+import TEMP_DATA_DIR from './standalone/temp-dir'
 
 const getListOfWorkshopArchives = async (workshopDirectory: string, gameVersion: string): Promise<ModContainer[]> => {
     const modDirectories: string[] = fs.readdirSync(workshopDirectory)
